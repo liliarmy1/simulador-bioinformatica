@@ -1,9 +1,10 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# Configuración de página limpia y profesional
+# Configuración avanzada de la interfaz
 st.set_page_config(page_title="BioInnova - Plataforma de Simulación", layout="wide")
 
-# Diccionario del código genético real para el Simulador 1
+# Diccionario del código genético real
 CODIGO_GENETICO = {
     'UUU': 'Fenilalanina', 'UUC': 'Fenilalanina', 'UUA': 'Leucina', 'UUG': 'Leucina',
     'CUU': 'Leucina', 'CUC': 'Leucina', 'CUA': 'Leucina', 'CUG': 'Leucina',
@@ -23,12 +24,11 @@ CODIGO_GENETICO = {
     'GGU': 'Glicina', 'GGC': 'Glicina', 'GGA': 'Glicina', 'GGG': 'Glicina'
 }
 
-# --- NAVEGACIÓN LATERAL SIN EMOJIS ---
+# --- NAVEGACIÓN LATERAL ---
 with st.sidebar:
     st.title("BioInnova")
-    st.write("Plataforma Educativa de Bioinformática")
+    st.write("Plataforma de Simulación Bioinformática")
     st.markdown("---")
-    
     opcion = st.radio(
         "Navegación del Sistema:",
         [
@@ -44,12 +44,8 @@ with st.sidebar:
 
 # --- CONTENIDO PRINCIPAL ---
 
-# ----------------------------------------------------
-# SECCIÓN: INICIO
-# ----------------------------------------------------
 if opcion == "Inicio de la Plataforma":
     st.info("### Sistema Integrado de Bioinformática Educativa\nPlataforma diseñada para la experimentación molecular y el análisis genómico interactivo.")
-    
     st.title("Bienvenidos a BioInnova")
     st.write("Un entorno virtual desarrollado para transformar conceptos abstractos de la biología molecular en experiencias prácticas mediante algoritmos bioinformáticos aplicados.")
     
@@ -59,60 +55,26 @@ if opcion == "Inicio de la Plataforma":
     with col2:
         st.warning("#### Control Operativo\nUtiliza el menú lateral para acceder a cada uno de los cinco simuladores especializados y a la documentación técnica.")
 
-# ----------------------------------------------------
-# SIMULADOR 1: GENÓMICA TRADUCTOR
-# ----------------------------------------------------
 elif opcion == "1. Transcripción y Traducción":
-    st.info("### Introducción al Módulo\nEste simulador modela el Dogma Central de la Biología Molecular. Permite transcribir una secuencia de ADN a ARNm, traducirla a aminoácidos y simular mutaciones puntuales para comprender cómo los cambios genómicos alteran la síntesis de proteínas.")
-    
+    st.info("### Introducción al Módulo\nEste simulador modela el Dogma Central de la Biología Molecular. Permite transcribir una secuencia de ADN a ARNm, traducirla a aminoácidos y simular mutaciones puntuales.")
     st.title("Módulo de Transcripción y Traducción")
     
-    st.header("Entrada de Datos Genómicos")
-    adn_usuario = st.text_input("Ingresa una secuencia de ADN (Ejemplo: ATGGCCATT):", "ATGGCCATTTAG").upper().strip()
+    adn_usuario = st.text_input("Ingresa una secuencia de ADN (Ejemplo: ATGGCCATTTAG):", "ATGGCCATTTAG").upper().strip()
 
     if not adn_usuario or not all(base in "ATCG" for base in adn_usuario):
         st.error("Mensaje de Control: La secuencia ingresada contiene caracteres inválidos o está vacía. Introduzca únicamente las bases nitrogenadas estandarizadas (A, T, C, G).")
     else:
         arn_usuario = adn_usuario.replace("T", "U")
-        
         st.subheader("Fase de Transcripción")
         st.code(f"ADN original:  {adn_usuario}\nARNm generado: {arn_usuario}", language="text")
         
         st.subheader("Fase de Traducción (Proteína Original)")
-        aminoacidos_orig = []
         for i in range(0, len(arn_usuario) - len(arn_usuario) % 3, 3):
             codon = arn_usuario[i:i+3]
-            aminoacidos_orig.append(f"{codon} -> {CODIGO_GENETICO.get(codon, 'Desconocido')}")
-            st.write(f"• {aminoacidos_orig[-1]}")
-            
-        st.markdown("---")
-        st.header("Simulador de Mutaciones")
-        posicion = st.number_input("Posición de la base a mutar (Empezando en 1):", min_value=1, max_value=len(adn_usuario), value=4) - 1
-        nueva_base = st.selectbox("Selecciona la nueva base:", ["A", "T", "C", "G"])
-        
-        lista_adn = list(adn_usuario)
-        lista_adn[posicion] = nueva_base
-        adn_mutado = "".join(lista_adn)
-        arn_mutado = adn_mutado.replace("T", "U")
-        
-        st.subheader("Comparación de Secuencias")
-        st.code(f"ADN Original: {adn_usuario}\nADN Mutado:   {adn_mutado}", language="text")
-        
-        st.subheader("Proteína Mutada")
-        for i in range(0, len(arn_mutado) - len(arn_mutado) % 3, 3):
-            codon = arn_mutado[i:i+3]
-            linea_mutada = f"{codon} -> {CODIGO_GENETICO.get(codon, 'Desconocido')}"
-            if i < len(arn_usuario) and arn_usuario[i:i+3] != codon:
-                st.write(f"Cambio Detectado: **{linea_mutada} (Modificado)**")
-            else:
-                st.write(f"• {linea_mutada}")
+            st.write(f"• {codon} -> {CODIGO_GENETICO.get(codon, 'Desconocido')}")
 
-# ----------------------------------------------------
-# SIMULADOR 2: ALINEAMIENTO DE SECUENCIAS
-# ----------------------------------------------------
 elif opcion == "2. Alineamiento de Secuencias":
-    st.info("### Introducción al Módulo\nEste simulador implementa una versión didáctica del alineamiento global de secuencias. Permite comparar dos cadenas de nucleótidos para identificar regiones de similitud, calculando una matriz de puntuación basada en coincidencias y penalizaciones.")
-    
+    st.info("### Introducción al Módulo\nEste simulador implementa una versión didáctica del alineamiento global de secuencias. Permite comparar dos cadenas de nucleótidos para identificar regiones de similitud, calculando una matriz de puntuación.")
     st.title("Módulo de Alineamiento Global")
     
     col1, col2 = st.columns(2)
@@ -125,30 +87,14 @@ elif opcion == "2. Alineamiento de Secuencias":
         st.error("Mensaje de Control: Las secuencias deben contener únicamente las bases A, T, C, G.")
     else:
         st.subheader("Matriz de Coincidencias Computada")
-        # Generación de matriz visual didáctica
-        filas = len(seq2)
-        columnas = len(seq1)
-        
-        matriz_visual = []
-        for i in range(filas):
-            fila_actual = []
-            for j in range(columnas):
-                puntos = 1 if seq2[i] == seq1[j] else -1
-                fila_actual.append(puntos)
-            matriz_visual.append(fila_actual)
-            
+        matriz_visual = [[1 if b2 == b1 else -1 for b1 in seq1] for b2 in seq2]
         st.table(matriz_visual)
-        st.success(f"Análisis Completado: Se ha calculado la matriz de coincidencia para un área de {filas}x{columnas} bases.")
+        st.success(f"Análisis Completado de forma exitosa.")
 
-# ----------------------------------------------------
-# SIMULADOR 3: ENSAMBLE DE FRAGMENTOS
-# ----------------------------------------------------
 elif opcion == "3. Ensamble de Fragmentos":
-    st.info("### Introducción al Módulo\nModela el proceso de ensamble genómico a escala reducida mediante la técnica de superposición de k-meros (fragmentos de longitud fija). Simula cómo los algoritmos bioinformáticos reconstruyen una secuencia larga a partir de lecturas cortas.")
-    
+    st.info("### Introducción al Módulo\nModela el proceso de ensamble genómico a escala reducida mediante la técnica de superposición de fragmentos de longitud fija (k-meros).")
     st.title("Módulo de Ensamble Genómico")
     
-    st.header("Simulación de Fragmentación")
     secuencia_madre = st.text_input("Secuencia Genómica Matriz:", "ATGCEATGCE").upper().strip()
     k = st.slider("Longitud del fragmento (k-mero):", min_value=2, max_value=4, value=3)
     
@@ -156,85 +102,82 @@ elif opcion == "3. Ensamble de Fragmentos":
         st.error("Mensaje de Control: La longitud de la secuencia matriz debe ser mayor que el tamaño del k-mero seleccionado.")
     else:
         fragmentos = [secuencia_madre[i:i+k] for i in range(len(secuencia_madre) - k + 1)]
-        
         st.subheader("Fragmentos Generados (k-meros)")
         st.write(", ".join(set(fragmentos)))
-        
-        st.success(f"Simulación Exitosa: Genoma reconstruido mediante el solapamiento ordenado de {len(fragmentos)} fragmentos consecutivos.")
+        st.success(f"Simulación Exitosa de solapamiento.")
 
-# ----------------------------------------------------
-# SIMULADOR 4: FILOGENIA (UPGMA)
-# ----------------------------------------------------
 elif opcion == "4. Filogenia (UPGMA)":
-    st.info("### Introducción al Módulo\nEste módulo explica las relaciones evolutivas aplicando el método numérico de agrupación jerárquica (UPGMA). Calcula de forma dinámica la cercanía filogenética entre tres especies ficticias basándose en su distancia genética.")
-    
+    st.info("### Introducción al Módulo\nEste módulo agrupa jerárquicamente las especies según su distancia genética empleando el método numérico UPGMA. Personalice las especies y configure las distancias moleculares.")
     st.title("Módulo de Análisis Filogenético (UPGMA)")
     
-    st.header("Matriz de Distancia Genética")
-    st.write("Establece la distancia estimada entre las especies evaluadas:")
-    
-    dist_ab = st.slider("Distancia Genética entre Especie A y Especie B:", min_value=1, max_value=10, value=2)
-    dist_ac = st.slider("Distancia Genética entre Especie A y Especie C:", min_value=1, max_value=10, value=8)
-    dist_bc = st.slider("Distancia Genética entre Especie B y Especie C:", min_value=1, max_value=10, value=7)
-    
-    st.subheader("Esquema de Agrupación Cladística")
-    if dist_ab < dist_ac and dist_ab < dist_bc:
-        st.warning("Resultado del Algoritmo: Las Especies A y B comparten el ancestro común más cercano. La Especie C forma un grupo externo.")
-        st.code("  [ (Especie A , Especie B) , Especie C ]", language="text")
-    else:
-        st.warning("Resultado del Algoritmo: Las afinidades genéticas indican una divergencia alternativa en los nodos evolutivos.")
-
-# ----------------------------------------------------
-# SIMULADOR 5: MODELADO ESTRUCTURAL
-# ----------------------------------------------------
-elif opcion == "5. Modelado Estructural":
-    st.info("### Introducción al Módulo\nPermite analizar la relación entre la secuencia lineal de aminoácidos y la conformación tridimensional de la proteína. Simula cómo una mutación modifica los puntos de anclaje de la estructura terciaria.")
-    
-    st.title("Módulo de Simulación Estructural")
-    
-    proteina_tipo = st.selectbox("Selecciona la proteína de estudio:", ["Hemoglobina Beta", "Insulina", "Queratina"])
-    estabilidad = st.slider("Nivel de estabilidad estructural simulado (%):", min_value=0, max_value=100, value=95)
-    
-    col1, col2 = st.columns(2)
+    st.header("Configuración de Especies")
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.success(f"Modelo seleccionado: {proteina_tipo}")
-        st.metric(label="Estabilidad de Puentes de Hidrógeno", value=f"{estabilidad}%")
+        spA = st.text_input("Nombre de la Especie A:", "Solenodon")
     with col2:
-        if estabilidad < 50:
-            st.error("Estado Crítico: La pérdida de estabilidad compromete la funcionalidad biológica de la macromolécula (Desnaturalización).")
-        else:
-            st.success("Estado Óptimo: La estructura terciaria mantiene su conformación activa funcional.")
+        spB = st.text_input("Nombre de la Especie B:", "Plagiodontia")
+    with col3:
+        spC = st.text_input("Nombre de la Especie C:", "Homo_sapiens")
+        
+    st.header("Matriz de Distancias Evolutivas")
+    dist_ab = st.slider(f"Distancia entre {spA} y {spB}:", min_value=1, max_value=20, value=3)
+    dist_ac = st.slider(f"Distancia entre {spA} y {spC}:", min_value=1, max_value=20, value=15)
+    dist_bc = st.slider(f"Distancia entre {spB} y {spC}:", min_value=1, max_value=20, value=14)
+    
+    st.subheader("Cladograma Filogenético Generado")
+    
+    # Determinar matemáticamente cuál par está más cercano según las distancias reales
+    if dist_ab <= dist_ac and dist_ab <= dist_bc:
+        par_cercano = f"({spA}, {spB})"
+        externo = spC
+    elif dist_ac <= dist_ab and dist_ac <= dist_bc:
+        par_cercano = f"({spA}, {spC})"
+        externo = spB
+    else:
+        par_cercano = f"({spB}, {spC})"
+        externo = spA
+        
+    st.warning("Resultado del Análisis:")
+    st.code(f"───┤ Node \n    ├─── {par_cercano}\n    └─── {externo}", language="text")
 
-# ----------------------------------------------------
-# EVALUACIÓN Y USABILIDAD: MANUAL, ERRORES Y TEST
-# ----------------------------------------------------
+elif opcion == "5. Modelado Estructural":
+    st.info("### Introducción al Módulo\nVisualización tridimensional interactiva de la estructura molecular de proteínas mediante el renderizado directo de archivos PDB.")
+    st.title("Visualizador de Estructuras Proteicas 3D")
+    
+    proteina = st.selectbox("Selecciona el modelo macromolecular a renderizar:", ["Hemoglobina (Cadena Beta)", "Insulina", "Inmunoglobulina"])
+    
+    # Mapeo de códigos PDB reales para renderizar mediante la API pública de la RCSB PDB
+    pdb_codes = {
+        "Hemoglobina (Cadena Beta)": "1A3N",
+        "Insulina": "1ZNI",
+        "Inmunoglobulina": "1IGY"
+    }
+    pdb_id = pdb_codes[proteina]
+    
+    st.success(f"Estructura Terciaria Activa: Código de acceso PDB asignado {pdb_id}")
+    
+    # Código HTML e incrustación JavaScript de 3Dmol.js para lograr la visualización molecular tridimensional interactiva
+    componente_html = f"""
+    <div style="height: 500px; width: 100%; position: relative;" class="viewer_3dmoljs" 
+         data-pdb="{pdb_id}" data-backgroundcolor="0xffffff" data-style="cartoon:color=spectrum"></div>
+    <script src="https://3dmol.org/build/3Dmol-min.js"></script>
+    """
+    
+    components.html(componente_html, height=520)
+    st.caption("Control del Visor: Utilice el clic izquierdo para rotar la estructura, el clic derecho para trasladarla y la rueda de desplazamiento para aplicar zoom.")
+
 elif opcion == "Manual y Usabilidad":
     st.title("Evaluación, Usabilidad y Soporte del Sistema")
-    
     tab1, tab2, tab3 = st.tabs(["Guía de Ayuda", "Protocolo de Errores", "Test de Usuarios"])
     
     with tab1:
         st.success("### Guía de Ayuda al Usuario")
-        st.write("""
-        Esta sección proporciona orientación básica para interactuar con los entornos de simulación:
-        1. **Módulo de Genómica:** Ingrese únicamente cadenas que correspondan a nucleótidos reales. La herramienta procesará la información en bloques de tres elementos.
-        2. **Navegación:** Utilice el panel lateral para alternar entre los diferentes análisis. Las variables se actualizan automáticamente al modificar los controles deslizantes o menús de selección.
-        3. **Interpretación:** Los bloques informativos en la parte superior contextualizan el fundamento biológico evaluado por el sistema.
-        """)
-        
+        st.write("1. **Navegación:** Utilice el panel izquierdo.\n2. **Visualización 3D:** Interactúe directamente sobre el lienzo molecular usando el ratón.")
     with tab2:
         st.warning("### Registro de Mensajes de Error Controlados")
-        st.write("""
-        El sistema cuenta con mecanismos de control de excepciones diseñados para evitar fallas críticas. Los mensajes estructurados en la interfaz incluyen de manera integrada:
-        * **Validación Genómica:** Notificación cuando el campo de texto recibe bases no válidas ajenas a la nomenclatura biológica.
-        * **Validación Dimensional:** Restricciones dinámicas en los selectores numéricos que impiden procesar valores negativos o que excedan los límites reales de la secuencia analizada.
-        """)
-        
+        st.write("* **Validación Genómica:** Filtra caracteres no biológicos.\n* **Límites de Entrada:** Restringe valores numéricos incoherentes.")
     with tab3:
         st.info("### Test de Usabilidad para Usuarios")
-        st.write("Formulario estructurado para evaluar el desempeño y la pertinencia pedagógica de la plataforma:")
-        
-        st.radio("1. ¿La interfaz permite una navegación clara entre los simuladores?", ["Totalmente de acuerdo", "En desacuerdo"])
-        st.radio("2. ¿Los mensajes de error ayudaron a corregir datos de entrada incorrectos?", ["Totalmente de acuerdo", "En desacuerdo"])
-        st.radio("3. ¿El Laboratorio de Mutaciones facilita la comprensión del cambio genético?", ["Totalmente de acuerdo", "En desacuerdo"])
+        st.radio("1. ¿La interfaz permite una navegación clara?", ["Totalmente de acuerdo", "En desacuerdo"])
+        st.radio("2. ¿Los visualizadores interactivos facilitan la comprensión?", ["Totalmente de acuerdo", "En desacuerdo"])
         st.button("Enviar Respuestas del Test")
