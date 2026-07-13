@@ -202,10 +202,10 @@ elif opcion == "Estación 1: Transcripción y Traducción":
 
     st.markdown("---")
     st.markdown("### Desafío de Estación")
-    r1 = st.radio("¿Cuál es el codón universal estandarizado para el inicio de la traducción proteica?", ["UUU", "UGA", "AUG", "GGG"])
+    r1 = st.radio("¿Cuál es el codón universal estandarizado para el inicio de la traducción proteica?", ["UUU", "UGA", "AUG", "GGG"], index=None)
     if r1 == "AUG":
         st.success("Correcto. El codón AUG codifica para la Metionina y marca el inicio del marco de lectura abierto.")
-    else:
+    elif r1 is not None:
         st.error("Inténtalo de nuevo. Pista: Es el codón que codifica para la Metionina.")
 
 # --- ESTACIÓN 2: ALINEAMIENTO GLOBAL ---
@@ -307,12 +307,11 @@ elif opcion == "Estación 3: Ensamble Genómico":
             st.success(f"Genoma Reconstruido Exitosamente (Contig Completo): {secuencia_madre}")
             completar_modulo("Ensamble", 20)
 
-# --- ESTACIÓN 4: FILOGENIA MOLECULAR DINÁMICA CON FAUNA ENDÉMICA DE RD ---
+# --- ESTACIÓN 4: FILOGENIA MOLECULAR DINÁMICA ---
 elif opcion == "Estación 4: Filogenia Molecular":
     st.markdown("## Estación 4: Análisis Cladístico Basado en Distancias de Fauna Dominicana")
     st.markdown("---")
     
-    # Listado de especies reales de la RD
     lista_especies = [
         "Solenodonte de la Hispaniola", 
         "Jutía de la Hispaniola", 
@@ -336,7 +335,6 @@ elif opcion == "Estación 4: Filogenia Molecular":
         ejecutar_barra_progreso("Computando agrupamientos estructurales UPGMA...")
         st.markdown("<div class='step-card'><b>Cladograma Interactivo y Reactivo en Tiempo Real</b></div>", unsafe_allow_html=True)
         
-        # Inyección del Canvas HTML5 dinámico que procesa las variables de Streamlit directamente
         canvas_html = f"""
         <div style="text-align: center; background-color: #FAFAFA; padding: 15px; border-radius: 10px; border: 1px solid #E0E0E0;">
             <canvas id="treeCanvas" width="750" height="350" style="background-color: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></canvas>
@@ -346,7 +344,6 @@ elif opcion == "Estación 4: Filogenia Molecular":
             const ctx = canvas.getContext('2d');
             const dist = {d12};
 
-            // Ajuste dinámico de los brazos según la distancia seleccionada
             let v_len = 40 + (dist * 8);
 
             ctx.lineWidth = 3;
@@ -395,7 +392,7 @@ elif opcion == "Estación 4: Filogenia Molecular":
             ctx.lineTo(280, 120);
             ctx.stroke();
 
-            // Brazos Dinámicos finales basados en la selección del usuario
+            // Brazos Dinámicos finales
             ctx.beginPath();
             ctx.moveTo(280, 40);
             ctx.lineTo(280 + v_len, 40);
@@ -489,13 +486,13 @@ elif opcion == "Caso Clínico Integrado":
     
     st.code("Cadena Normal:   ATG GTG CAC CTG ACT CCT GAG GAG\nCadena Paciente: ATG GTG CAC CTG ACT CCT GTG GAG", language="text")
     
-    diagnostico = st.radio("Tras observar detenidamente el set de secuencias, ¿existe una mutación puntual en el paciente?", ["Seleccionar...", "Sí, se detecta un cambio puntual de bases.", "No, las cadenas son completamente idénticas."])
+    diagnostico = st.radio("Tras observar detenidamente el set de secuencias, ¿existe una mutación puntual en el paciente?", ["Seleccionar...", "Sí, se detecta un cambio puntual de bases.", "No, las cadenas son completamente idénticas."], index=0)
     
     if diagnostico == "Sí, se detecta un cambio puntual de bases.":
         st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
         completar_modulo("CasoClinico", 20)
 
-# --- DOCUMENTACIÓN Y EVALUACIÓN FORMATIVA DE GENÉTICA GENERAL ---
+# --- DOCUMENTACIÓN Y EVALUACIÓN CON OPCIONES EN BLANCO ---
 elif opcion == "Manual, Errores y Evaluación Técnica":
     st.title("Documentación y Evaluación del Aprendizaje")
     
@@ -523,14 +520,15 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
         st.markdown("### Examen de Conocimientos Esenciales: Fundamentos de Genética")
         st.write("Responde las siguientes preguntas básicas para evaluar tus conocimientos académicos:")
         
-        # Pregunta 1: ¿Qué es el ADN?
+        # Pregunta 1: ¿Qué es el ADN? (index=None para que inicie desmarcada)
         p1 = st.radio(
             "1. ¿Qué es el ADN (Ácido Desoxirribonucleico)?",
             [
                 "Una proteína globular encargada de la contracción muscular celular.",
                 "La macromolécula que almacena y transmite la información genética de los seres vivos.",
                 "Un carbohidrato simple utilizado para la obtención de energía inmediata."
-            ]
+            ],
+            index=None
         )
         
         # Pregunta 2: ¿Cuáles son las bases del ADN?
@@ -540,7 +538,8 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Adenina, Timina, Citosina y Guanina.",
                 "Adenina, Uracilo, Citosina y Guanina.",
                 "Alanina, Treonina, Cisteína y Glicina."
-            ]
+            ],
+            index=None
         )
         
         # Pregunta 3: Estructura del ADN
@@ -550,7 +549,8 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Estructura lineal simple monocatenaria.",
                 "Forma de doble hélice o escala de caracol helicoidal.",
                 "Estructura perfectamente simétrica en forma de anillo cerrado único."
-            ]
+            ],
+            index=None
         )
         
         # Pregunta 4: Localización celular
@@ -560,20 +560,25 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "En el Aparato de Golgi.",
                 "En los Ribosomas libres del citoplasma.",
                 "En el Núcleo celular."
-            ]
+            ],
+            index=None
         )
         
         if st.button("Enviar y Calificar Evaluación"):
-            nota = 0
-            if p1 == "La macromolécula que almacena y transmite la información genética de los seres vivos.": nota += 25
-            if p2 == "Adenina, Timina, Citosina y Guanina.": nota += 25
-            if p3 == "Forma de doble hélice o escala de caracol helicoidal.": nota += 25
-            if p4 == "En el Núcleo celular.": nota += 25
-            
-            st.markdown(f"### Resultado Final de la Evaluación: `{nota} / 100` puntos.")
-            if nota == 100:
-                st.success("¡Excelente! Has demostrado un conocimiento perfecto de las bases esenciales de la genética.")
-            elif nota >= 50:
-                st.warning("Buen intento. Has aprobado la evaluación, pero se recomienda repasar los conceptos fundamentales.")
+            # Control por si intentan enviar la evaluación con campos vacíos
+            if p1 is None or p2 is None or p3 is None or p4 is None:
+                st.warning("Por favor, responde a todas las preguntas del examen antes de enviar tu calificación.")
             else:
-                st.error("Te sugerimos volver a revisar el material de estudio e intentar la evaluación de nuevo para consolidar tu aprendizaje.")
+                nota = 0
+                if p1 == "La macromolécula que almacena y transmite la información genética de los seres vivos.": nota += 25
+                if p2 == "Adenina, Timina, Citosina y Guanina.": nota += 25
+                if p3 == "Forma de doble hélice o escala de caracol helicoidal.": nota += 25
+                if p4 == "En el Núcleo celular.": nota += 25
+                
+                st.markdown(f"### Resultado Final de la Evaluación: `{nota} / 100` puntos.")
+                if nota == 100:
+                    st.success("¡Excelente! Has demostrado un conocimiento perfecto de las bases esenciales de la genética.")
+                elif nota >= 50:
+                    st.warning("Buen intento. Has aprobado la evaluación, pero se recomienda repasar los conceptos fundamentales.")
+                else:
+                    st.error("Te sugerimos volver a revisar el material de estudio e intentar la evaluación de nuevo para consolidar tu aprendizaje.")
