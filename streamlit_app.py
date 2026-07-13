@@ -66,11 +66,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZACIÓN DEL SISTEMA DE PUNTOS ---
+# --- INICIALIZACIÓN DEL SISTEMA DE PUNTOS Y ESTADOS ---
 if 'biopuntos' not in st.session_state:
     st.session_state.biopuntos = 0
 if 'modulos_completados' not in st.session_state:
     st.session_state.modulos_completados = set()
+if 'analisis_ejecutado' not in st.session_state:
+    st.session_state.analisis_ejecutado = False
+if 'ultima_secuencia' not in st.session_state:
+    st.session_state.ultima_secuencia = ""
 
 def completar_modulo(modulo_nombre, puntos):
     if modulo_nombre not in st.session_state.modulos_completados:
@@ -121,7 +125,7 @@ with st.sidebar:
             "Estación 4: Filogenia Molecular",
             "Estación 5: Estructura Proteica 3D",
             "Caso Clínico Integrado",
-            "Manual, Errores y Evaluación Técnica"
+            "Manual, Errores y Evaluación Técnico"
         ]
     )
 
@@ -167,12 +171,20 @@ elif opcion == "Estación 1: Transcripción y Traducción":
     
     adn_input = st.text_input("Ingresa la secuencia molde de ADN (Dirección 5' a 3'):", "ATGGCCATTTAG").upper().strip()
     
+    # Si la secuencia cambia, reiniciamos el estado del análisis
+    if adn_input != st.session_state.ultima_secuencia:
+        st.session_state.analisis_ejecutado = False
+        st.session_state.ultima_secuencia = adn_input
+        
     if not adn_input or not all(base in "ATCG" for base in adn_input):
         st.error("Mensaje de Control: Detectamos caracteres no biológicos en tu entrada. Recuerda que el ADN solo acepta las bases nitrogenadas estandarizadas: A, T, C y G. Por favor, verifica tu secuencia.")
     else:
         if st.button("Ejecutar Análisis Molecular"):
             ejecutar_barra_progreso("Modelando Dogma Central...")
+            st.session_state.analisis_ejecutado = True
             
+        # Si el análisis ha sido ejecutado, se muestra y permanece visible
+        if st.session_state.analisis_ejecutado:
             st.markdown("<div class='step-card'><b>Paso 1: Lectura de la Cadena Molde</b><br>Secuencia de entrada procesada correctamente de forma molecular.</div>", unsafe_allow_html=True)
             st.code(f"ADN: {adn_input}", language="text")
             
@@ -326,7 +338,6 @@ elif opcion == "Estación 4: Filogenia Molecular":
     with col2: 
         sp2 = st.selectbox("Especie Dominicana B:", lista_especies, index=1)
     with col3: 
-        # Ajuste: Especies estrictamente endémicas/nativas de nuestra isla
         sp3 = st.selectbox("Especie de Referencia C:", ["Cotorra de la Española", "Cigua Palmera"], index=0)
         
     st.markdown("### Parámetro de Distancia Evolutiva")
@@ -492,6 +503,8 @@ elif opcion == "Caso Clínico Integrado":
     if diagnostico == "Sí, se detecta un cambio puntual de bases.":
         st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
         completar_modulo("CasoClinico", 20)
+    elif diagnostico == "No, las cadenas son completamente idénticas.":
+        st.error("Respuesta Incorrecta. Observa detenidamente el penúltimo triplete: la cadena normal tiene 'GAG' mientras que el paciente presenta 'GTG'. Por favor, revisa de nuevo la secuencia.")
 
 # --- DOCUMENTACIÓN Y EVALUACIÓN ---
 elif opcion == "Manual, Errores y Evaluación Técnica":
@@ -512,7 +525,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
         
     with tab2:
         st.markdown("""
-            ### Sistema Interno de Gestión de Excepciones
+            ### Systema Interno de Gestión de Excepciones
             * **Caracteres No Biológicos:** El sistema bloquea de manera inmediata cualquier análisis si la secuencia de ADN de entrada contiene caracteres fuera de las bases estandarizadas (A, T, C, G).
             * **Desajuste de k-meros:** Control lógico para impedir que la variable del deslizador supere la extensión lineal real de la secuencia genómica dada.
         """)
