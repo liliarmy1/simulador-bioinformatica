@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos personalizados para mejorar la interfaz (Tarjetas, Bordes Redondeados, Sombras y Colores)
+# Estilos personalizados avanzados (Tarjetas, Bordes Redondeados, Sombras y Colores)
 st.markdown("""
     <style>
     .main-title {
@@ -38,7 +38,20 @@ st.markdown("""
         border-radius: 8px;
         padding: 15px;
         border-left: 4px solid #43A047;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    .align-seq-box {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 22px;
+        font-weight: bold;
+        letter-spacing: 6px;
+        background-color: #263238;
+        color: #00E676;
+        padding: 12px;
+        border-radius: 6px;
+        text-align: center;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        margin: 5px 0;
     }
     .codon-box {
         display: inline-block;
@@ -63,7 +76,7 @@ def completar_modulo(modulo_nombre, puntos):
     if modulo_nombre not in st.session_state.modulos_completados:
         st.session_state.modulos_completados.add(modulo_nombre)
         st.session_state.biopuntos += puntos
-        st.toast(f"Modulo completado: +{puntos} BioPuntos")
+        st.toast(f"Módulo completado: +{puntos} BioPuntos")
 
 # Diccionario del código genético real
 CODIGO_GENETICO = {
@@ -85,12 +98,12 @@ CODIGO_GENETICO = {
     'GGU': 'Glicina', 'GGC': 'Glicina', 'GGA': 'Glicina', 'GGG': 'Glicina'
 }
 
-# --- BARRA LATERAL PROFESIONAL ---
+# --- BARRA LATERAL MODIFICADA ---
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center; color: #1E88E5;'>BioInnova</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'><b>Laboratorio Virtual Avanzado</b></p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #1E88E5; margin-bottom: 2px;'>Laboratorio Virtual</h1>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    # Cuadro de Puntuación en la Barra Lateral
+    # Cuadro de Puntuación
     st.markdown(f"""
         <div style='background-color: #FFF3E0; padding: 15px; border-radius: 8px; border-left: 5px solid #FFB74D; text-align: center; margin-bottom: 20px;'>
             <span style='font-size: 18px; font-weight: bold; color: #E65100;'>BioPuntos Acumulados</span><br>
@@ -109,11 +122,11 @@ with st.sidebar:
             "Estación 4: Filogenia Molecular",
             "Estación 5: Estructura Proteica 3D",
             "Caso Clínico Integrado",
-            "Manual, Errores y Test de Usabilidad"
+            "Manual, Errores y Evaluación Técnica"
         ]
     )
 
-# --- FUNCIÓN PARA SIMULAR CARGA (BARRA DE PROGRESO) ---
+# --- FUNCIÓN PARA SIMULAR CARGA ---
 def ejecutar_barra_progreso(texto="Cargando simulación..."):
     progreso_bar = st.progress(0)
     status_text = st.empty()
@@ -124,7 +137,7 @@ def ejecutar_barra_progreso(texto="Cargando simulación..."):
     progreso_bar.empty()
     status_text.empty()
 
-# --- MODULO 0: PORTADA PRINCIPAL ---
+# --- MÓDULO 0: PORTADA PRINCIPAL ---
 if opcion == "Portada Principal":
     st.markdown("<div class='main-title'>BioInnova</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Laboratorio Virtual de Bioinformática y Simulación Molecular</div>", unsafe_allow_html=True)
@@ -149,15 +162,6 @@ if opcion == "Portada Principal":
     st.markdown("### Flujo de la Información Biológica en el Laboratorio")
     st.info("ADN Núcleo-Plasmático -> ARN Mensajero Transcrito -> Cadena Polipeptídica Traducida -> Estructura Terciaria 3D Funcional")
 
-    if len(st.session_state.modulos_completados) == 6:
-        st.markdown("""
-            <div style="background-color: #E8F5E9; border: 2px solid #43A047; padding: 30px; border-radius: 12px; text-align: center; margin-top: 20px;">
-                <h1 style="color: #2E7D32;">CERTIFICADO EMITIDO</h1>
-                <h3>Felicidades, Aprendiz de Bioinformática</h3>
-                <p>Has completado con éxito todos los módulos técnicos del laboratorio virtual con excelencia académica.</p>
-            </div>
-        """, unsafe_allow_html=True)
-
 # --- ESTACIÓN 1: TRANSCRIPCIÓN Y TRADUCCIÓN ---
 elif opcion == "Estación 1: Transcripción y Traducción":
     st.markdown("## Estación 1: Transcripción y Traducción Génica")
@@ -171,16 +175,13 @@ elif opcion == "Estación 1: Transcripción y Traducción":
         if st.button("Ejecutar Análisis Molecular"):
             ejecutar_barra_progreso("Modelando Dogma Central...")
             
-            # PASO 1: Leer ADN
             st.markdown("<div class='step-card'><b>Paso 1: Lectura de la Cadena Molde</b><br>Secuencia de entrada procesada correctamente de forma molecular.</div>", unsafe_allow_html=True)
             st.code(f"ADN: {adn_input}", language="text")
             
-            # PASO 2: Transcripción
             arn_secuencia = adn_input.replace("T", "U")
             st.markdown("<div class='step-card'><b>Paso 2: Transcripción a ARN Mensajero (ARNm)</b><br>La enzima ARN polimerasa sustituye la Timina (T) por el Uracilo (U).</div>", unsafe_allow_html=True)
             st.code(f"ARNm: {arn_secuencia}", language="text")
             
-            # PASO 3: Segmentación de Codones
             st.markdown("<div class='step-card'><b>Paso 3: Segmentación en Tripletes (Codones)</b><br>El ribosoma agrupa los nucleótidos de tres en tres para iniciar la lectura limpia.</div>", unsafe_allow_html=True)
             codones = [arn_secuencia[i:i+3] for i in range(0, len(arn_secuencia) - len(arn_secuencia) % 3, 3)]
             
@@ -189,7 +190,6 @@ elif opcion == "Estación 1: Transcripción y Traducción":
                 codon_html += f"<div class='codon-box'>{c}</div>"
             st.markdown(codon_html, unsafe_allow_html=True)
             
-            # PASO 4: Traducción a Aminoácidos
             st.markdown("<div class='step-card'><b>Paso 4: Traducción a Cadena Polipeptídica</b><br>Cada triplete se traduce al aminoácido correspondiente según el código genético universal.</div>", unsafe_allow_html=True)
             
             for c in codones:
@@ -210,44 +210,84 @@ elif opcion == "Estación 1: Transcripción y Traducción":
     else:
         st.error("Inténtalo de nuevo. Pista: Es el codón que codifica para la Metionina.")
 
-# --- ESTACIÓN 2: ALINEAMIENTO GLOBAL (ALGORITMO REAL NEEDLEMAN-WUNSCH) ---
+# --- ESTACIÓN 2: ALINEAMIENTO GLOBAL (DISEÑO INTEGRADO Y INTERACTIVO) ---
 elif opcion == "Estación 2: Alineamiento Global":
     st.markdown("## Estación 2: Alineamiento de Secuencias Homólogas")
     st.markdown("---")
     
     col1, col2 = st.columns(2)
     with col1:
-        s1 = st.text_input("Secuencia Genómica de Referencia (A):", "AATC").upper().strip()
+        s1 = st.text_input("Secuencia Genómica de Referencia (Secuencia 1):", "ATGCA").upper().strip()
     with col2:
-        s2 = st.text_input("Secuencia Genómica Objeto (B):", "ACAC").upper().strip()
+        s2 = st.text_input("Secuencia Genómica Objeto (Secuencia 2):", "ATCCA").upper().strip()
+        
+    st.markdown("### Parámetros de Puntuación (Algoritmo Needleman-Wunsch)")
+    c1, c2, c3 = st.columns(3)
+    with c1: match_val = st.number_input("Coincidencia (Match)", value=1.0)
+    with c2: mismatch_val = st.number_input("Diferencia (Mismatch)", value=-1.0)
+    with c3: gap_val = st.number_input("Gap", value=-2.0)
         
     if not all(b in "ATCG" for b in s1) or not all(b in "ATCG" for b in s2):
         st.error("Mensaje de Control: Las cadenas ingresadas contienen errores de formato nucleotídico. Asegúrate de usar únicamente letras A, T, C, G.")
     else:
-        if st.button("Calcular Matriz Dinámica de Puntuación"):
-            ejecutar_barra_progreso("Calculando alineamiento mediante Needleman-Wunsch...")
+        if st.button("Simular Alineamiento Óptimo"):
+            ejecutar_barra_progreso("Calculando matriz dinámica y alineación óptima...")
             
+            # Cálculo de la matriz real
             n, m = len(s2), len(s1)
             matriz = [[0] * (m + 1) for _ in range(n + 1)]
-            
-            for i in range(n + 1): matriz[i][0] = -i
-            for j in range(m + 1): matriz[0][j] = -j
+            for i in range(n + 1): matriz[i][0] = int(i * gap_val)
+            for j in range(m + 1): matriz[0][j] = int(j * gap_val)
             
             for i in range(1, n + 1):
                 for j in range(1, m + 1):
-                    match = matriz[i-1][j-1] + (1 if s2[i-1] == s1[j-1] else -1)
-                    delete = matriz[i-1][j] - 1
-                    insert = matriz[i][j-1] - 1
-                    matriz[i][j] = max(match, delete, insert)
+                    match = matriz[i-1][j-1] + (match_val if s2[i-1] == s1[j-1] else mismatch_val)
+                    delete = matriz[i-1][j] + gap_val
+                    insert = matriz[i][j-1] + gap_val
+                    matriz[i][j] = int(max(match, delete, insert))
                     
-            st.markdown("<div class='step-card'><b>Matriz de Programación Dinámica Computada</b><br>Visualiza la puntuación matemática acumulada para encontrar el camino óptimo de alineamiento.</div>", unsafe_allow_html=True)
+            st.markdown("### Matriz de Puntuación Acumulada")
             st.table(matriz)
             
-            st.markdown("<div class='step-card'><b>Resultado del Alineamiento Óptimo Hallado</b></div>", unsafe_allow_html=True)
-            st.success(f"Score del Alineamiento Global Final: {matriz[n][m]} puntos.")
+            # --- SECCIÓN REDISEÑADA Y CREATIVA DE RESULTADOS ---
+            st.markdown("### 🧬 Resultado del Alineamiento Computado")
+            
+            # Contenedores estéticos para las secuencias
+            st.markdown(f"""
+            <div style="background-color: #F8F9FA; border-radius: 10px; padding: 20px; border: 1px solid #E0E0E0;">
+                <p style="margin-bottom: 5px; font-weight: bold; color: #555;">Secuencia 1 (Referencia):</p>
+                <div class='align-seq-box'>{s1}</div>
+                <p style="margin-top: 15px; margin-bottom: 5px; font-weight: bold; color: #555;">Secuencia 2 (Objeto):</p>
+                <div class='align-seq-box' style='color: #29B6F6;'>{s2}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Cálculo dinámico de identidad
+            coincidencias = sum(1 for a, b in zip(s1, s2) if a == b)
+            pct_identidad = (coincidencias / max(len(s1), len(s2))) * 100
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # Visualización de Métricas Finales mediante bloques estéticos nativos
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.markdown(f"""
+                <div style="background-color: #E8F5E9; border-left: 6px solid #43A047; padding: 15px; border-radius: 6px;">
+                    <span style="font-size: 14px; color: #2E7D32; font-weight: bold;">PUNTUACIÓN FINAL DEL ALINEAMIENTO</span><br>
+                    <span style="font-size: 24px; font-weight: 800; color: #1B5E20;">{matriz[n][m]} puntos</span>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_m2:
+                st.markdown(f"""
+                <div style="background-color: #E3F2FD; border-left: 6px solid #2196F3; padding: 15px; border-radius: 6px;">
+                    <span style="font-size: 14px; color: #1565C0; font-weight: bold;">PORCENTAJE DE IDENTIDAD APROXIMADO</span><br>
+                    <span style="font-size: 24px; font-weight: 800; color: #0D47A1;">{pct_identidad:.1f}% de Homología</span>
+                </div>
+                """, unsafe_allow_html=True)
+                
             completar_modulo("Alineamiento", 20)
 
-# --- ESTACIÓN 3: ENSAMBLE DE FRAGMENTOS ---
+# --- ESTACIÓN 3: ENSAMBLE GENÓMICO ---
 elif opcion == "Estación 3: Ensamble Genómico":
     st.markdown("## Estación 3: Ensamble Genómico por Solapamiento")
     st.markdown("---")
@@ -280,34 +320,27 @@ elif opcion == "Estación 4: Filogenia Molecular":
     st.markdown("---")
     
     col1, col2, col3 = st.columns(3)
-    with col1:
-        sp1 = st.text_input("Especie Endémica A:", "Solenodon")
-    with col2:
-        sp2 = st.text_input("Especie Endémica B:", "Plagiodontia")
-    with col3:
-        sp3 = st.text_input("Especie de Referencia C:", "Homo_sapiens")
+    with col1: sp1 = st.text_input("Especie Endémica A:", "Solenodon")
+    with col2: sp2 = st.text_input("Especie Endémica B:", "Plagiodontia")
+    with col3: sp3 = st.text_input("Especie de Referencia C:", "Homo_sapiens")
         
     st.markdown("### Configuración de Distancias Evolutivas Mutuas")
     d12 = st.slider(f"Distancia genética molecular entre {sp1} y {sp2}:", min_value=1, max_value=20, value=3)
     
     if st.button("Renderizar Árbol Filogenético Dinámico"):
         ejecutar_barra_progreso("Computando agrupamientos estructurales UPGMA...")
-        
-        import graphviz
-        dot = graphviz.Digraph(comment='Árbol Filogenético')
-        dot.node('R', 'Ancestro Común')
-        dot.node('N1', f'Nodo Interno\n(Distancia: {d12/2})')
-        dot.node('A', sp1)
-        dot.node('B', sp2)
-        dot.node('C', sp3)
-        
-        dot.edge('R', 'N1')
-        dot.edge('R', 'C')
-        dot.edge('N1', 'A')
-        dot.edge('N1', 'B')
-        
         st.markdown("<div class='step-card'><b>Cladograma Estructural Computado mediante Algoritmo UPGMA</b></div>", unsafe_allow_html=True)
-        st.graphviz_chart(dot)
+        
+        st.code(f"""
+        Ancestro Comun
+           │
+           ├─── Nodo Interno (Distancia: {d12/2})
+           │       ├─── {sp1}
+           │       └─── {sp2}
+           │
+           └─── {sp3}
+        """, language="text")
+        
         completar_modulo("Filogenia", 20)
 
 # --- ESTACIÓN 5: ESTRUCTURA PROTEICA 3D ---
@@ -331,10 +364,26 @@ elif opcion == "Estación 5: Estructura Proteica 3D":
     
     with col_v:
         st.markdown("<div class='step-card'><b>Visor Molecular Interactivo Tridimensional (3Dmol.js)</b></div>", unsafe_allow_html=True)
+        
         html_code = f"""
-        <div style="height: 450px; width: 100%; position: relative;" class="viewer_3dmoljs" 
-             data-pdb="{info_p['id']}" data-backgroundcolor="0xffffff" data-style="cartoon:color=spectrum"></div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://3dmol.org/build/3Dmol-min.js"></script>
+        
+        <div id="container-3dmol" style="height: 450px; width: 100%; position: relative; border: 1px solid #ddd; border-radius: 8px;"></div>
+        
+        <script>
+        $(document).ready(function() {{
+            let element = $('#container-3dmol');
+            let config = {{ backgroundColor: 'white' }};
+            let viewer = $3Dmol.createViewer(element, config);
+            
+            $3Dmol.download("pdb:{info_p['id']}", viewer, {{}}, function() {{
+                viewer.setStyle({{}}, {{cartoon: {{color: 'spectrum'}}}});
+                viewer.zoomTo();
+                viewer.render();
+            }});
+        }});
+        </script>
         """
         components.html(html_code, height=470)
         st.caption("Interacción: Clic izquierdo para rotar la estructura, clic derecho para trasladar y rueda del mouse para zoom continuo.")
@@ -346,9 +395,6 @@ elif opcion == "Estación 5: Estructura Proteica 3D":
         st.write(f"Dimensión Estructural: {info_p['aa']}")
         st.write(f"Patología Asociada: {info_p['enf']}")
         
-        if st.checkbox("Mostrar curiosidad científica"):
-            st.info("Los modelos de simulación por computadora permiten diseñar fármacos específicos que encajan en los sitios activos de estas proteínas sin necesidad de pruebas de laboratorio masivas.")
-            
     completar_modulo("Estructuras", 20)
 
 # --- CASO CLÍNICO INTEGRADO ---
@@ -363,7 +409,6 @@ elif opcion == "Caso Clínico Integrado":
         </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("### Secuencia de Nucleótidos Obtenida por Secuenciación Sanger:")
     st.code("Cadena Normal:   ATG GTG CAC CTG ACT CCT GAG GAG\nCadena Paciente: ATG GTG CAC CTG ACT CCT GTG GAG", language="text")
     
     diagnostico = st.radio("Tras observar detenidamente el set de secuencias, ¿existe una mutación puntual en el paciente?", ["Seleccionar...", "Sí, se detecta un cambio puntual de bases.", "No, las cadenas son completamente idénticas."])
@@ -371,54 +416,70 @@ elif opcion == "Caso Clínico Integrado":
     if diagnostico == "Sí, se detecta un cambio puntual de bases.":
         st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
         completar_modulo("CasoClinico", 20)
-    elif diagnostico == "No, las cadenas son completamente idénticas.":
-        st.error("Respuesta incorrecta. Observa con atención el triplete número 7 en ambas cadenas gaseosas.")
 
-# --- MANUAL DE USUARIO, PROTOCOLO DE ERRORES Y TEST DE USABILIDAD ---
-elif opcion == "Manual, Errores y Test de Usabilidad":
-    st.title("Documentación Técnica y Validación de Campo")
+# --- DOCUMENTACIÓN Y EVALUACIÓN TÉCNICA (CON PREGUNTAS DE GENÉTICA) ---
+elif opcion == "Manual, Errores y Evaluation Técnica":
+    st.title("Documentación y Evaluación del Aprendizaje")
     
-    tab1, tab2, tab3 = st.tabs(["Manual del Usuario Avanzado", "Protocolo de Mensajes de Error", "Test de Usabilidad de 10 Preguntas"])
+    tab1, tab2, tab3 = st.tabs(["Manual del Usuario", "Protocolo de Errores", "Evaluación Técnica de Genética"])
     
     with tab1:
         st.markdown("""
-            ### Guía Completa de Operación del Laboratorio Virtual
-            Esta plataforma automatiza el análisis bioinformático en estaciones de trabajo modulares consecutivas:
-            1. **Transcripción y Traducción:** Transforma secuencias crudas de ADN a proteínas funcionales en segundos.
-            2. **Alineamiento de Secuencias:** Implementa el algoritmo real de Needleman-Wunsch para obtener matrices de homología biológica.
-            3. **Ensamble Genómico:** Modela mapas de solapamiento lógicos de fragmentos genómicos (k-meros).
-            4. **Filogenia Molecular:** Reconstruye árboles evolutivos utilizando técnicas matemáticas cuantitativas basadas en distancias.
-            5. **Visualización Interactiva:** Renderiza archivos de la base de datos internacional PDB en tres dimensiones sin requerir plugins locales.
+            ### Guía Operativa del Laboratorio Virtual
+            Esta plataforma automatiza procesos bioinformáticos avanzados a través de simuladores específicos:
+            * **Estación 1:** Modelado del Dogma Central (Transcripción/Traducción).
+            * **Estación 2:** Alineamientos usando matrices dinámicas de homología de nucleótidos.
+            * **Estación 3:** Reconstrucción de genomas fragmentados en k-meros.
+            * **Estación 4:** Filogenia matemática basada en matrices de distancias.
+            * **Estación 5:** Modelado molecular 3D dinámico.
         """)
         
     with tab2:
         st.markdown("""
-            ### Gestión Inteligente y Control Operativo de Errores
-            El sistema cuenta con blindaje de código ante excepciones de usuario:
-            * **Excepción de Entrada Alfanumérica:** Si ingresas letras ajenas a A, T, C, G, el software congela el análisis de forma segura y despliega un panel instructivo amigable en lugar de romperse.
-            * **Incoherencia de Parámetros de Fragmentación:** Si la longitud del k-mero supera las dimensiones de la secuencia molde, la interfaz activa una bandera de advertencia matemática.
+            ### Sistema Interno de Gestión de Excepciones
+            * **Caracteres No Biológicos:** El sistema bloquea de manera inmediata cualquier análisis si la secuencia de ADN de entrada incluye caracteres fuera de las bases estandarizadas (A, T, C, G).
+            * **Desajuste de k-meros:** Control lógico para impedir que la variable del deslizador supere la extensión lineal real de la secuencia genómica dada.
         """)
         
     with tab3:
-        st.markdown("### Cuestionario de Usabilidad Integral para el Usuario (Escala Likert)")
-        st.write("Por favor, califica los siguientes enunciados para evaluar la pertinencia técnica del laboratorio virtual:")
+        st.markdown("### 📝 Examen de Conocimientos: Genética Computacional y Bioinformática")
+        st.write("Responde las siguientes preguntas técnicas basadas en los módulos experimentales:")
         
-        preguntas = [
-            "1. ¿La interfaz gráfica del laboratorio facilita la navegación autónoma?",
-            "2. ¿El desglose paso a paso mejora significativamente la comprensión de los algoritmos?",
-            "3. ¿El visor tridimensional interactivo responde de manera fluida y precisa?",
-            "4. ¿La matriz de programación dinámica del alineamiento es clara y legible?",
-            "5. ¿Los mensajes de error proporcionan indicaciones claras para corregir entradas?",
-            "6. ¿El sistema de BioPuntos motiva el avance continuo por las estaciones?",
-            "7. ¿El caso clínico ayuda a conectar la bioinformática con la práctica médica real?",
-            "8. ¿La velocidad de carga y procesamiento de los simuladores es óptima?",
-            "9. ¿El lenguaje técnico utilizado es adecuado para fines educativos y profesionales?",
-            "10. ¿Consideras que esta herramienta está lista para ser presentada formalmente ante un jurado?"
-        ]
+        # Pregunta 1
+        p1 = st.radio(
+            "1. Durante la transcripción realizada en la Estación 1, ¿cuál es el cambio estructural exacto que sufre la secuencia?",
+            ["La Adenina es reemplazada por Cisteína.", "La Timina del ADN es sustituida por el Uracilo en el ARN.", "La Guanina se transforma en un codón STOP de manera espontánea."]
+        )
         
-        respuestas_test = {}
-        for p in preguntas:
-            respuestas_test[p] = st.radio(p, ["Totalmente de acuerdo", "De acuerdo", "En desacuerdo", "Totalmente en desacuerdo"], key=p)
+        # Pregunta 2
+        p2 = st.radio(
+            "2. En el algoritmo de alineamiento global de la Estación 2, ¿para qué se introduce penalizaciones por brechas (Gaps)?",
+            ["Para simular inserciones o deleciones evolutivas en las secuencias.", "Para acelerar el tiempo de cómputo del microprocesador.", "Para obligar a que las cadenas sean idénticas artificialmente."]
+        )
+        
+        # Pregunta 3
+        p3 = st.radio(
+            "3. ¿Qué representa la raíz o el nodo inicial en el árbol UPGMA calculado en la Estación 4?",
+            ["El espécimen con mayor cantidad de mutaciones acumuladas.", "El ancestro común filogenético del cual derivan los linajes bajo análisis.", "Una especie moderna elegida de forma aleatoria."]
+        )
+        
+        # Pregunta 4
+        p4 = st.radio(
+            "4. Al interactuar con macromoléculas en la Estación 5, ¿cuál es la utilidad de contar con códigos de acceso PDB únicos?",
+            ["Permiten identificar el color asignado a la cadena polipeptídica.", "Garantizan el acceso unívoco al registro oficial de coordenadas estructurales tridimensionales resueltas.", "Sirven para guardar el puntaje de BioPuntos del usuario."]
+        )
+        
+        if st.button("Enviar y Evaluar Respuestas"):
+            nota = 0
+            if p1 == "La Timina del ADN es sustituida por el Uracilo en el ARN.": nota += 25
+            if p2 == "Para simular inserciones o deleciones evolutivas en las secuencias.": nota += 25
+            if p3 == "El ancestro común filogenético del cual derivan los linajes bajo análisis.": nota += 25
+            if p4 == "Garantizan el acceso unívoco al registro oficial de coordenadas estructurales tridimensionales resueltas.": nota += 25
             
-        if st.button("Validar y Enviar Test de Usabilidad"):
-            st.success("Muchas gracias. Tus respuestas han sido recopiladas y procesadas en la base de datos de usabilidad del laboratorio virtual.")
+            st.markdown(f"### Resultado Final: `{nota} / 100` puntos.")
+            if nota == 100:
+                st.success("¡Excelente! Has demostrado un dominio absoluto de los fundamentos biológicos y bioinformáticos del laboratorio.")
+            elif nota >= 50:
+                st.warning("Buen intento. Has aprobado, pero te sugiero revisar las estaciones donde fallaste para perfeccionar tus conceptos.")
+            else:
+                st.error("Te recomendamos repasar las estaciones experimentales e intentarlo de nuevo para mejorar tu rendimiento académico.")
