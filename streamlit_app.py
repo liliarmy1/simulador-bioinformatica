@@ -210,7 +210,7 @@ elif opcion == "Estación 1: Transcripción y Traducción":
     else:
         st.error("Inténtalo de nuevo. Pista: Es el codón que codifica para la Metionina.")
 
-# --- ESTACIÓN 2: ALINEAMIENTO GLOBAL (DISEÑO INTEGRADO Y INTERACTIVO) ---
+# --- ESTACIÓN 2: ALINEAMIENTO GLOBAL ---
 elif opcion == "Estación 2: Alineamiento Global":
     st.markdown("## Estación 2: Alineamiento de Secuencias Homólogas")
     st.markdown("---")
@@ -233,7 +233,6 @@ elif opcion == "Estación 2: Alineamiento Global":
         if st.button("Simular Alineamiento Óptimo"):
             ejecutar_barra_progreso("Calculando matriz dinámica y alineación óptima...")
             
-            # Cálculo de la matriz real
             n, m = len(s2), len(s1)
             matriz = [[0] * (m + 1) for _ in range(n + 1)]
             for i in range(n + 1): matriz[i][0] = int(i * gap_val)
@@ -249,10 +248,8 @@ elif opcion == "Estación 2: Alineamiento Global":
             st.markdown("### Matriz de Puntuación Acumulada")
             st.table(matriz)
             
-            # --- SECCIÓN REDISEÑADA Y CREATIVA DE RESULTADOS ---
-            st.markdown("### 🧬 Resultado del Alineamiento Computado")
+            st.markdown("### Resultado del Alineamiento Computado")
             
-            # Contenedores estéticos para las secuencias
             st.markdown(f"""
             <div style="background-color: #F8F9FA; border-radius: 10px; padding: 20px; border: 1px solid #E0E0E0;">
                 <p style="margin-bottom: 5px; font-weight: bold; color: #555;">Secuencia 1 (Referencia):</p>
@@ -262,13 +259,11 @@ elif opcion == "Estación 2: Alineamiento Global":
             </div>
             """, unsafe_allow_html=True)
             
-            # Cálculo dinámico de identidad
             coincidencias = sum(1 for a, b in zip(s1, s2) if a == b)
             pct_identidad = (coincidencias / max(len(s1), len(s2))) * 100
             
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # Visualización de Métricas Finales mediante bloques estéticos nativos
             col_m1, col_m2 = st.columns(2)
             with col_m1:
                 st.markdown(f"""
@@ -314,7 +309,7 @@ elif opcion == "Estación 3: Ensamble Genómico":
             st.success(f"Genoma Reconstruido Exitosamente (Contig Completo): {secuencia_madre}")
             completar_modulo("Ensamble", 20)
 
-# --- ESTACIÓN 4: FILOGENIA MOLECULAR ---
+# --- ESTACIÓN 4: FILOGENIA MOLECULAR (ÁRBOL RENDERIZADO VISUAL E INTERACTIVO) ---
 elif opcion == "Estación 4: Filogenia Molecular":
     st.markdown("## Estación 4: Análisis Cladístico Basado en Distancias")
     st.markdown("---")
@@ -325,22 +320,95 @@ elif opcion == "Estación 4: Filogenia Molecular":
     with col3: sp3 = st.text_input("Especie de Referencia C:", "Homo_sapiens")
         
     st.markdown("### Configuración de Distancias Evolutivas Mutuas")
-    d12 = st.slider(f"Distancia genética molecular entre {sp1} y {sp2}:", min_value=1, max_value=20, value=3)
+    d12 = st.slider(f"Distancia genética molecular entre {sp1} y {sp2}:", min_value=1, max_value=20, value=6)
     
     if st.button("Renderizar Árbol Filogenético Dinámico"):
         ejecutar_barra_progreso("Computando agrupamientos estructurales UPGMA...")
-        st.markdown("<div class='step-card'><b>Cladograma Estructural Computado mediante Algoritmo UPGMA</b></div>", unsafe_allow_html=True)
+        st.markdown("<div class='step-card'><b>Cladograma Estructural e Interactivo Computado (Algoritmo UPGMA)</b></div>", unsafe_allow_html=True)
         
-        st.code(f"""
-        Ancestro Comun
-           │
-           ├─── Nodo Interno (Distancia: {d12/2})
-           │       ├─── {sp1}
-           │       └─── {sp2}
-           │
-           └─── {sp3}
-        """, language="text")
-        
+        # Inyección de un Canvas HTML5 interactivo y estilizado mediante código vectorial JS
+        canvas_html = f"""
+        <div style="text-align: center; background-color: #FAFAFA; padding: 15px; border-radius: 10px; border: 1px solid #E0E0E0;">
+            <canvas id="treeCanvas" width="700" height="350" style="background-color: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></canvas>
+        </div>
+        <script>
+            const canvas = document.getElementById('treeCanvas');
+            const ctx = canvas.getContext('2d');
+            const dist = {d12};
+
+            // Ajuste dinámico de la longitud del brazo según el slider
+            let v_len = 50 + (dist * 7);
+
+            ctx.lineWidth = 3;
+            ctx.font = "bold 14px Arial";
+
+            // Raíz Principal del Clado
+            ctx.strokeStyle = "#455A64";
+            ctx.beginPath();
+            ctx.moveTo(50, 175);
+            ctx.lineTo(150, 175);
+            ctx.stroke();
+            
+            // Nodo Ancestro Común
+            ctx.fillStyle = "#FF7043";
+            ctx.beginPath();
+            ctx.arc(150, 175, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "#37474F";
+            ctx.fillText("Ancestro Común", 60, 160);
+
+            // Bifurcación Vertical Principal
+            ctx.strokeStyle = "#1E88E5";
+            ctx.beginPath();
+            ctx.moveTo(150, 80);
+            ctx.lineTo(150, 270);
+            ctx.stroke();
+
+            // Brazo Superior hacia las Especies Cercanas
+            ctx.beginPath();
+            ctx.moveTo(150, 80);
+            ctx.lineTo(300, 80);
+            ctx.stroke();
+
+            // Sub-Nodo Evolutivo (A y B)
+            ctx.fillStyle = "#AB47BC";
+            ctx.beginPath();
+            ctx.arc(300, 80, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "#7B1FA2";
+            ctx.fillText("Nodo Interno (D: " + (dist/2).toFixed(1) + ")", 230, 60);
+
+            // Sub-Bifurcación Vertical para A y B
+            ctx.strokeStyle = "#43A047";
+            ctx.beginPath();
+            ctx.moveTo(300, 40);
+            ctx.lineTo(300, 120);
+            ctx.stroke();
+
+            // Brazos Finales y etiquetas de Especies A y B
+            ctx.beginPath();
+            ctx.moveTo(300, 40);
+            ctx.lineTo(300 + v_len, 40);
+            ctx.moveTo(300, 120);
+            ctx.lineTo(300 + v_len, 120);
+            ctx.stroke();
+
+            ctx.fillStyle = "#2E7D32";
+            ctx.fillText("{sp1}", 315 + v_len, 45);
+            ctx.fillText("{sp2}", 315 + v_len, 125);
+
+            // Brazo Inferior hacia la Especie C (Homo sapiens)
+            ctx.strokeStyle = "#E53935";
+            ctx.beginPath();
+            ctx.moveTo(150, 270);
+            ctx.lineTo(500, 270);
+            ctx.stroke();
+
+            ctx.fillStyle = "#C62828";
+            ctx.fillText("{sp3} (Grupo Externo)", 515, 275);
+        </script>
+        """
+        components.html(canvas_html, height=390)
         completar_modulo("Filogenia", 20)
 
 # --- ESTACIÓN 5: ESTRUCTURA PROTEICA 3D ---
@@ -417,8 +485,8 @@ elif opcion == "Caso Clínico Integrado":
         st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
         completar_modulo("CasoClinico", 20)
 
-# --- DOCUMENTACIÓN Y EVALUACIÓN TÉCNICA (CON PREGUNTAS DE GENÉTICA) ---
-elif opcion == "Manual, Errores y Evaluation Técnica":
+# --- DOCUMENTACIÓN Y EVALUACIÓN TÉCNICA (SISTEMA TOTALMENTE HOMOLOGADO) ---
+elif opcion == "Manual, Errores y Evaluación Técnica":
     st.title("Documentación y Evaluación del Aprendizaje")
     
     tab1, tab2, tab3 = st.tabs(["Manual del Usuario", "Protocolo de Errores", "Evaluación Técnica de Genética"])
@@ -442,7 +510,7 @@ elif opcion == "Manual, Errores y Evaluation Técnica":
         """)
         
     with tab3:
-        st.markdown("### 📝 Examen de Conocimientos: Genética Computacional y Bioinformática")
+        st.markdown("### Examen de Conocimientos: Genética Computacional y Bioinformática")
         st.write("Responde las siguientes preguntas técnicas basadas en los módulos experimentales:")
         
         # Pregunta 1
@@ -478,7 +546,7 @@ elif opcion == "Manual, Errores y Evaluation Técnica":
             
             st.markdown(f"### Resultado Final: `{nota} / 100` puntos.")
             if nota == 100:
-                st.success("¡Excelente! Has demostrado un dominio absoluto de los fundamentos biológicos y bioinformáticos del laboratorio.")
+                st.success("Excelente. Has demostrado un dominio absoluto de los fundamentos biológicos y bioinformáticos del laboratorio.")
             elif nota >= 50:
                 st.warning("Buen intento. Has aprobado, pero te sugiero revisar las estaciones donde fallaste para perfeccionar tus conceptos.")
             else:
