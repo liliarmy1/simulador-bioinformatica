@@ -66,7 +66,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZACIÓN DEL SISTEMA DE PUNTOS (GAMIFICACIÓN) ---
+# --- INICIALIZACIÓN DEL SISTEMA DE PUNTOS ---
 if 'biopuntos' not in st.session_state:
     st.session_state.biopuntos = 0
 if 'modulos_completados' not in st.session_state:
@@ -78,7 +78,7 @@ def completar_modulo(modulo_nombre, puntos):
         st.session_state.biopuntos += puntos
         st.toast(f"Módulo completado: +{puntos} BioPuntos")
 
-# Diccionario del código genético real
+# Diccionario del código genético universal
 CODIGO_GENETICO = {
     'UUU': 'Fenilalanina', 'UUC': 'Fenilalanina', 'UUA': 'Leucina', 'UUG': 'Leucina',
     'CUU': 'Leucina', 'CUC': 'Leucina', 'CUA': 'Leucina', 'CUG': 'Leucina',
@@ -98,12 +98,11 @@ CODIGO_GENETICO = {
     'GGU': 'Glicina', 'GGC': 'Glicina', 'GGA': 'Glicina', 'GGG': 'Glicina'
 }
 
-# --- BARRA LATERAL MODIFICADA ---
+# --- BARRA LATERAL ---
 with st.sidebar:
     st.markdown("<h1 style='text-align: center; color: #1E88E5; margin-bottom: 2px;'>Laboratorio Virtual</h1>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Cuadro de Puntuación
     st.markdown(f"""
         <div style='background-color: #FFF3E0; padding: 15px; border-radius: 8px; border-left: 5px solid #FFB74D; text-align: center; margin-bottom: 20px;'>
             <span style='font-size: 18px; font-weight: bold; color: #E65100;'>BioPuntos Acumulados</span><br>
@@ -126,7 +125,6 @@ with st.sidebar:
         ]
     )
 
-# --- FUNCIÓN PARA SIMULAR CARGA ---
 def ejecutar_barra_progreso(texto="Cargando simulación..."):
     progreso_bar = st.progress(0)
     status_text = st.empty()
@@ -309,103 +307,115 @@ elif opcion == "Estación 3: Ensamble Genómico":
             st.success(f"Genoma Reconstruido Exitosamente (Contig Completo): {secuencia_madre}")
             completar_modulo("Ensamble", 20)
 
-# --- ESTACIÓN 4: FILOGENIA MOLECULAR (ÁRBOL RENDERIZADO VISUAL E INTERACTIVO) ---
+# --- ESTACIÓN 4: FILOGENIA MOLECULAR DINÁMICA CON FAUNA ENDÉMICA DE RD ---
 elif opcion == "Estación 4: Filogenia Molecular":
-    st.markdown("## Estación 4: Análisis Cladístico Basado en Distancias")
+    st.markdown("## Estación 4: Análisis Cladístico Basado en Distancias de Fauna Dominicana")
     st.markdown("---")
     
+    # Listado de especies reales de la RD
+    lista_especies = [
+        "Solenodonte de la Hispaniola", 
+        "Jutía de la Hispaniola", 
+        "Gavilán de la Hispaniola", 
+        "Iguana de Ricord", 
+        "Cigua Palmera"
+    ]
+    
     col1, col2, col3 = st.columns(3)
-    with col1: sp1 = st.text_input("Especie Endémica A:", "Solenodon")
-    with col2: sp2 = st.text_input("Especie Endémica B:", "Plagiodontia")
-    with col3: sp3 = st.text_input("Especie de Referencia C:", "Homo_sapiens")
+    with col1: 
+        sp1 = st.selectbox("Especie Dominicana A:", lista_especies, index=0)
+    with col2: 
+        sp2 = st.selectbox("Especie Dominicana B:", lista_especies, index=1)
+    with col3: 
+        sp3 = st.selectbox("Especie Externa de Referencia C:", ["Homo sapiens", "Mus musculus"], index=0)
         
-    st.markdown("### Configuración de Distancias Evolutivas Mutuas")
-    d12 = st.slider(f"Distancia genética molecular entre {sp1} y {sp2}:", min_value=1, max_value=20, value=6)
+    st.markdown("### Parámetro de Distancia Evolutiva")
+    d12 = st.slider(f"Distancia genética estimada entre {sp1} y {sp2}:", min_value=1, max_value=20, value=8)
     
     if st.button("Renderizar Árbol Filogenético Dinámico"):
         ejecutar_barra_progreso("Computando agrupamientos estructurales UPGMA...")
-        st.markdown("<div class='step-card'><b>Cladograma Estructural e Interactivo Computado (Algoritmo UPGMA)</b></div>", unsafe_allow_html=True)
+        st.markdown("<div class='step-card'><b>Cladograma Interactivo y Reactivo en Tiempo Real</b></div>", unsafe_allow_html=True)
         
-        # Inyección de un Canvas HTML5 interactivo y estilizado mediante código vectorial JS
+        # Inyección del Canvas HTML5 dinámico que procesa las variables de Streamlit directamente
         canvas_html = f"""
         <div style="text-align: center; background-color: #FAFAFA; padding: 15px; border-radius: 10px; border: 1px solid #E0E0E0;">
-            <canvas id="treeCanvas" width="700" height="350" style="background-color: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></canvas>
+            <canvas id="treeCanvas" width="750" height="350" style="background-color: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></canvas>
         </div>
         <script>
             const canvas = document.getElementById('treeCanvas');
             const ctx = canvas.getContext('2d');
             const dist = {d12};
 
-            // Ajuste dinámico de la longitud del brazo según el slider
-            let v_len = 50 + (dist * 7);
+            // Ajuste dinámico de los brazos según la distancia seleccionada
+            let v_len = 40 + (dist * 8);
 
             ctx.lineWidth = 3;
-            ctx.font = "bold 14px Arial";
+            ctx.font = "bold 13px Arial";
 
-            // Raíz Principal del Clado
+            // Raíz del Clado
             ctx.strokeStyle = "#455A64";
             ctx.beginPath();
-            ctx.moveTo(50, 175);
-            ctx.lineTo(150, 175);
+            ctx.moveTo(40, 175);
+            ctx.lineTo(140, 175);
             ctx.stroke();
             
-            // Nodo Ancestro Común
+            // Nodo del Ancestro Común
             ctx.fillStyle = "#FF7043";
             ctx.beginPath();
-            ctx.arc(150, 175, 6, 0, 2 * Math.PI);
+            ctx.arc(140, 175, 6, 0, 2 * Math.PI);
             ctx.fill();
             ctx.fillStyle = "#37474F";
-            ctx.fillText("Ancestro Común", 60, 160);
+            ctx.fillText("Ancestro Común", 45, 160);
 
             // Bifurcación Vertical Principal
             ctx.strokeStyle = "#1E88E5";
             ctx.beginPath();
-            ctx.moveTo(150, 80);
-            ctx.lineTo(150, 270);
+            ctx.moveTo(140, 80);
+            ctx.lineTo(140, 270);
             ctx.stroke();
 
-            // Brazo Superior hacia las Especies Cercanas
+            // Brazo hacia el Sub-Nodo de especies dominicanas
             ctx.beginPath();
-            ctx.moveTo(150, 80);
-            ctx.lineTo(300, 80);
+            ctx.moveTo(140, 80);
+            ctx.lineTo(280, 80);
             ctx.stroke();
 
-            // Sub-Nodo Evolutivo (A y B)
+            // Sub-Nodo Evolutivo Reactivo
             ctx.fillStyle = "#AB47BC";
             ctx.beginPath();
-            ctx.arc(300, 80, 6, 0, 2 * Math.PI);
+            ctx.arc(280, 80, 6, 0, 2 * Math.PI);
             ctx.fill();
             ctx.fillStyle = "#7B1FA2";
-            ctx.fillText("Nodo Interno (D: " + (dist/2).toFixed(1) + ")", 230, 60);
+            ctx.fillText("Nodo Interno (D: " + (dist/2).toFixed(1) + ")", 210, 60);
 
             // Sub-Bifurcación Vertical para A y B
             ctx.strokeStyle = "#43A047";
             ctx.beginPath();
-            ctx.moveTo(300, 40);
-            ctx.lineTo(300, 120);
+            ctx.moveTo(280, 40);
+            ctx.lineTo(280, 120);
             ctx.stroke();
 
-            // Brazos Finales y etiquetas de Especies A y B
+            // Brazos Dinámicos finales basados en la selección del usuario
             ctx.beginPath();
-            ctx.moveTo(300, 40);
-            ctx.lineTo(300 + v_len, 40);
-            ctx.moveTo(300, 120);
-            ctx.lineTo(300 + v_len, 120);
+            ctx.moveTo(280, 40);
+            ctx.lineTo(280 + v_len, 40);
+            ctx.moveTo(280, 120);
+            ctx.lineTo(280 + v_len, 120);
             ctx.stroke();
 
             ctx.fillStyle = "#2E7D32";
-            ctx.fillText("{sp1}", 315 + v_len, 45);
-            ctx.fillText("{sp2}", 315 + v_len, 125);
+            ctx.fillText("{sp1}", 295 + v_len, 45);
+            ctx.fillText("{sp2}", 295 + v_len, 125);
 
-            // Brazo Inferior hacia la Especie C (Homo sapiens)
+            // Brazo de la Especie de Control Externa
             ctx.strokeStyle = "#E53935";
             ctx.beginPath();
-            ctx.moveTo(150, 270);
-            ctx.lineTo(500, 270);
+            ctx.moveTo(140, 270);
+            ctx.lineTo(520, 270);
             ctx.stroke();
 
             ctx.fillStyle = "#C62828";
-            ctx.fillText("{sp3} (Grupo Externo)", 515, 275);
+            ctx.fillText("{sp3} (Grupo Externo)", 535, 275);
         </script>
         """
         components.html(canvas_html, height=390)
@@ -485,11 +495,11 @@ elif opcion == "Caso Clínico Integrado":
         st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
         completar_modulo("CasoClinico", 20)
 
-# --- DOCUMENTACIÓN Y EVALUACIÓN TÉCNICA (SISTEMA TOTALMENTE HOMOLOGADO) ---
+# --- DOCUMENTACIÓN Y EVALUACIÓN FORMATIVA DE GENÉTICA GENERAL ---
 elif opcion == "Manual, Errores y Evaluación Técnica":
     st.title("Documentación y Evaluación del Aprendizaje")
     
-    tab1, tab2, tab3 = st.tabs(["Manual del Usuario", "Protocolo de Errores", "Evaluación Técnica de Genética"])
+    tab1, tab2, tab3 = st.tabs(["Manual del Usuario", "Protocolo de Errores", "Evaluación Formativa de Genética"])
     
     with tab1:
         st.markdown("""
@@ -498,7 +508,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             * **Estación 1:** Modelado del Dogma Central (Transcripción/Traducción).
             * **Estación 2:** Alineamientos usando matrices dinámicas de homología de nucleótidos.
             * **Estación 3:** Reconstrucción de genomas fragmentados en k-meros.
-            * **Estación 4:** Filogenia matemática basada en matrices de distancias.
+            * **Estación 4:** Filogenia matemática basada en matrices de distancias de fauna endémica dominicana.
             * **Estación 5:** Modelado molecular 3D dinámico.
         """)
         
@@ -510,44 +520,60 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
         """)
         
     with tab3:
-        st.markdown("### Examen de Conocimientos: Genética Computacional y Bioinformática")
-        st.write("Responde las siguientes preguntas técnicas basadas en los módulos experimentales:")
+        st.markdown("### Examen de Conocimientos Esenciales: Fundamentos de Genética")
+        st.write("Responde las siguientes preguntas básicas para evaluar tus conocimientos académicos:")
         
-        # Pregunta 1
+        # Pregunta 1: ¿Qué es el ADN?
         p1 = st.radio(
-            "1. Durante la transcripción realizada en la Estación 1, ¿cuál es el cambio estructural exacto que sufre la secuencia?",
-            ["La Adenina es reemplazada por Cisteína.", "La Timina del ADN es sustituida por el Uracilo en el ARN.", "La Guanina se transforma en un codón STOP de manera espontánea."]
+            "1. ¿Qué es el ADN (Ácido Desoxirribonucleico)?",
+            [
+                "Una proteína globular encargada de la contracción muscular celular.",
+                "La macromolécula que almacena y transmite la información genética de los seres vivos.",
+                "Un carbohidrato simple utilizado para la obtención de energía inmediata."
+            ]
         )
         
-        # Pregunta 2
+        # Pregunta 2: ¿Cuáles son las bases del ADN?
         p2 = st.radio(
-            "2. En el algoritmo de alineamiento global de la Estación 2, ¿para qué se introduce penalizaciones por brechas (Gaps)?",
-            ["Para simular inserciones o deleciones evolutivas en las secuencias.", "Para acelerar el tiempo de cómputo del microprocesador.", "Para obligar a que las cadenas sean idénticas artificialmente."]
+            "2. ¿Cuáles son las cuatro bases nitrogenadas fundamentales que componen la molécula de ADN?",
+            [
+                "Adenina, Timina, Citosina y Guanina.",
+                "Adenina, Uracilo, Citosina y Guanina.",
+                "Alanina, Treonina, Cisteína y Glicina."
+            ]
         )
         
-        # Pregunta 3
+        # Pregunta 3: Estructura del ADN
         p3 = st.radio(
-            "3. ¿Qué representa la raíz o el nodo inicial en el árbol UPGMA calculado en la Estación 4?",
-            ["El espécimen con mayor cantidad de mutaciones acumuladas.", "El ancestro común filogenético del cual derivan los linajes bajo análisis.", "Una especie moderna elegida de forma aleatoria."]
+            "3. ¿Qué forma o estructura geométrica característica posee la molécula de ADN bicatenario de acuerdo con el modelo molecular estandarizado?",
+            [
+                "Estructura lineal simple monocatenaria.",
+                "Forma de doble hélice o escala de caracol helicoidal.",
+                "Estructura perfectamente simétrica en forma de anillo cerrado único."
+            ]
         )
         
-        # Pregunta 4
+        # Pregunta 4: Localización celular
         p4 = st.radio(
-            "4. Al interactuar con macromoléculas en la Estación 5, ¿cuál es la utilidad de contar con códigos de acceso PDB únicos?",
-            ["Permiten identificar el color asignado a la cadena polipeptídica.", "Garantizan el acceso unívoco al registro oficial de coordenadas estructurales tridimensionales resueltas.", "Sirven para guardar el puntaje de BioPuntos del usuario."]
+            "4. ¿En qué organelo especializado de las células eucariotas se localiza principalmente el ADN genómico?",
+            [
+                "En el Aparato de Golgi.",
+                "En los Ribosomas libres del citoplasma.",
+                "En el Núcleo celular."
+            ]
         )
         
-        if st.button("Enviar y Evaluar Respuestas"):
+        if st.button("Enviar y Calificar Evaluación"):
             nota = 0
-            if p1 == "La Timina del ADN es sustituida por el Uracilo en el ARN.": nota += 25
-            if p2 == "Para simular inserciones o deleciones evolutivas en las secuencias.": nota += 25
-            if p3 == "El ancestro común filogenético del cual derivan los linajes bajo análisis.": nota += 25
-            if p4 == "Garantizan el acceso unívoco al registro oficial de coordenadas estructurales tridimensionales resueltas.": nota += 25
+            if p1 == "La macromolécula que almacena y transmite la información genética de los seres vivos.": nota += 25
+            if p2 == "Adenina, Timina, Citosina y Guanina.": nota += 25
+            if p3 == "Forma de doble hélice o escala de caracol helicoidal.": nota += 25
+            if p4 == "En el Núcleo celular.": nota += 25
             
-            st.markdown(f"### Resultado Final: `{nota} / 100` puntos.")
+            st.markdown(f"### Resultado Final de la Evaluación: `{nota} / 100` puntos.")
             if nota == 100:
-                st.success("Excelente. Has demostrado un dominio absoluto de los fundamentos biológicos y bioinformáticos del laboratorio.")
+                st.success("¡Excelente! Has demostrado un conocimiento perfecto de las bases esenciales de la genética.")
             elif nota >= 50:
-                st.warning("Buen intento. Has aprobado, pero te sugiero revisar las estaciones donde fallaste para perfeccionar tus conceptos.")
+                st.warning("Buen intento. Has aprobado la evaluación, pero se recomienda repasar los conceptos fundamentales.")
             else:
-                st.error("Te recomendamos repasar las estaciones experimentales e intentarlo de nuevo para mejorar tu rendimiento académico.")
+                st.error("Te sugerimos volver a revisar el material de estudio e intentar la evaluación de nuevo para consolidar tu aprendizaje.")
