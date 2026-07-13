@@ -125,7 +125,7 @@ with st.sidebar:
             "Estación 4: Filogenia Molecular",
             "Estación 5: Estructura Proteica 3D",
             "Caso Clínico Integrado",
-            "Manual, Errores y Evaluación Técnico"
+            "Manual, Errores y Evaluación Técnica"
         ]
     )
 
@@ -171,7 +171,6 @@ elif opcion == "Estación 1: Transcripción y Traducción":
     
     adn_input = st.text_input("Ingresa la secuencia molde de ADN (Dirección 5' a 3'):", "ATGGCCATTTAG").upper().strip()
     
-    # Si la secuencia cambia, reiniciamos el estado del análisis
     if adn_input != st.session_state.ultima_secuencia:
         st.session_state.analisis_ejecutado = False
         st.session_state.ultima_secuencia = adn_input
@@ -183,7 +182,6 @@ elif opcion == "Estación 1: Transcripción y Traducción":
             ejecutar_barra_progreso("Modelando Dogma Central...")
             st.session_state.analisis_ejecutado = True
             
-        # Si el análisis ha sido ejecutado, se muestra y permanece visible
         if st.session_state.analisis_ejecutado:
             st.markdown("<div class='step-card'><b>Paso 1: Lectura de la Cadena Molde</b><br>Secuencia de entrada procesada correctamente de forma molecular.</div>", unsafe_allow_html=True)
             st.code(f"ADN: {adn_input}", language="text")
@@ -292,7 +290,7 @@ elif opcion == "Estación 2: Alineamiento Global":
                 
             completar_modulo("Alineamiento", 20)
 
-# --- ESTACIÓN 3: ENSAMBLE GENÓMICO ---
+# --- ESTACIÓN 3: ENSAMBLE GENÓNMICO ---
 elif opcion == "Estación 3: Ensamble Genómico":
     st.markdown("## Estación 3: Ensamble Genómico por Solapamiento")
     st.markdown("---")
@@ -506,9 +504,10 @@ elif opcion == "Caso Clínico Integrado":
     elif diagnostico == "No, las cadenas son completamente idénticas.":
         st.error("Respuesta Incorrecta. Observa detenidamente el penúltimo triplete: la cadena normal tiene 'GAG' mientras que el paciente presenta 'GTG'. Por favor, revisa de nuevo la secuencia.")
 
-# --- DOCUMENTACIÓN Y EVALUACIÓN ---
+# --- MANUAL, ERRORES Y EVALUACIÓN TÉCNICA ---
 elif opcion == "Manual, Errores y Evaluación Técnica":
-    st.title("Documentación y Evaluación del Aprendizaje")
+    st.markdown("## Documentación y Evaluación del Aprendizaje")
+    st.markdown("---")
     
     tab1, tab2, tab3 = st.tabs(["Manual del Usuario", "Protocolo de Errores", "Evaluación Formativa de Genética"])
     
@@ -516,18 +515,19 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
         st.markdown("""
             ### Guía Operativa del Laboratorio Virtual
             Esta plataforma automatiza procesos bioinformáticos avanzados a través de simuladores específicos:
-            * **Estación 1:** Modelado del Dogma Central (Transcripción/Traducción).
-            * **Estación 2:** Alineamientos usando matrices dinámicas de homología de nucleótidos.
-            * **Estación 3:** Reconstrucción de genomas fragmentados en k-meros.
-            * **Estación 4:** Filogenia matemática basada en matrices de distancias de fauna endémica dominicana.
-            * **Estación 5:** Modelado molecular 3D dinámico.
+            * **Estación 1 (Transcripción/Traducción):** Modelado del Dogma Central de la Biología Molecular convirtiendo secuencias de ADN molde a ARNm y obteniendo los aminoácidos resultantes.
+            * **Estación 2 (Alineamiento Global):** Alineamiento Needleman-Wunsch usando matrices dinámicas de homología de nucleótidos con penalizaciones configurables.
+            * **Estación 3 (Ensamble Genómico):** Reconstrucción de genomas fragmentados en k-meros únicos mediante el análisis de solapamientos continuos.
+            * **Estación 4 (Filogenia Molecular):** Análisis filogenético matemático basado en matrices de distancias evolutivas de fauna endémica dominicana.
+            * **Estación 5 (Estructura Proteica 3D):** Renderizado tridimensional dinámico de macromoléculas PDB mediante 3Dmol.js.
         """)
         
     with tab2:
         st.markdown("""
-            ### Systema Interno de Gestión de Excepciones
-            * **Caracteres No Biológicos:** El sistema bloquea de manera inmediata cualquier análisis si la secuencia de ADN de entrada contiene caracteres fuera de las bases estandarizadas (A, T, C, G).
-            * **Desajuste de k-meros:** Control lógico para impedir que la variable del deslizador supere la extensión lineal real de la secuencia genómica dada.
+            ### Sistema Interno de Gestión de Excepciones y Controles
+            * **Validación de Caracteres No Biológicos:** El sistema interrumpe el análisis inmediato en la Estación 1 si detecta bases que no correspondan a la nomenclatura IUPAC estándar de nucleótidos (A, T, C, G).
+            * **Control de Dimensión de k-meros:** Restricción lógica interactiva mediante un deslizador adaptativo para evitar fallos matemáticos por fragmentos de tamaño superior a la secuencia molde.
+            * **Persistencia de Estados en Interfaz:** Uso de variables controladas en `st.session_state` para evitar reinicios accidentales de renderizado al interactuar con formularios complementarios.
         """)
         
     with tab3:
@@ -542,7 +542,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "La macromolécula que almacena y transmite la información genética de los seres vivos.",
                 "Un carbohidrato simple utilizado para la obtención de energía inmediata."
             ],
-            index=None
+            index=None, key="p1_eva"
         )
         
         # 2. Bases del ADN
@@ -553,7 +553,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Adenina, Uracilo, Citosina y Guanina.",
                 "Alanina, Treonina, Cisteína y Glicina."
             ],
-            index=None
+            index=None, key="p2_eva"
         )
         
         # 3. Estructura del ADN
@@ -564,7 +564,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Forma de doble hélice o escala de caracol helicoidal.",
                 "Estructura perfectamente simétrica en forma de anillo cerrado único."
             ],
-            index=None
+            index=None, key="p3_eva"
         )
         
         # 4. Localización celular
@@ -575,7 +575,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "En los Ribosomas libres del citoplasma.",
                 "En el Núcleo celular."
             ],
-            index=None
+            index=None, key="p4_eva"
         )
 
         # 5. Sustitución en el ARN
@@ -586,7 +586,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Guanina.",
                 "Adenina."
             ],
-            index=None
+            index=None, key="p5_eva"
         )
 
         # 6. Definición de Gen
@@ -597,7 +597,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Un orgánulo celular responsable de la digestión de macromoléculas defectuosas.",
                 "La secuencia completa de aminoácidos unidos en un enlace peptídico circular."
             ],
-            index=None
+            index=None, key="p6_eva"
         )
 
         # 7. Los Cromosomas
@@ -608,7 +608,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Moléculas lipídicas que delimitan la membrana plasmática.",
                 "Vesículas citoplasmáticas que transportan proteínas exógenas."
             ],
-            index=None
+            index=None, key="p7_eva"
         )
 
         # 8. Mutación Genética
@@ -619,7 +619,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Al proceso normal de duplicación exacta de las cadenas celulares.",
                 "A la destrucción programada de las mitocondrias por falta de oxígeno."
             ],
-            index=None
+            index=None, key="p8_eva"
         )
 
         # 9. Función del ARNm
@@ -630,7 +630,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "Catalizar la degradación de los azúcares en la respiración celular anaeróbica.",
                 "Unir físicamente los fosfatos para dar rigidez a la pared celular de los tejidos."
             ],
-            index=None
+            index=None, key="p9_eva"
         )
 
         # 10. Unidad estructural (Nucleótido)
@@ -641,11 +641,10 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
                 "El Nucleótido (compuesto por un azúcar, un fosfato y una base nitrogenada).",
                 "El Ácido graso saturado."
             ],
-            index=None
+            index=None, key="p10_eva"
         )
         
         if st.button("Enviar y Calificar Evaluación"):
-            # Comprobación estricta de que las 10 preguntas tengan respuesta
             preguntas = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
             if any(p is None for p in preguntas):
                 st.warning("Por favor, responde a todas las preguntas (1 a 10) del examen antes de enviar tu calificación.")
