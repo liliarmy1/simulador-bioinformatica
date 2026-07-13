@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos personalizados avanzados (Tarjetas, Bordes Redondeados, Sombras y Colores)
+# Estilos personalizados avanzados adaptables a Modo Claro y Oscuro
 st.markdown("""
     <style>
     .main-title {
@@ -25,20 +25,23 @@ st.markdown("""
         color: #555555;
         margin-bottom: 30px;
     }
+    /* Tarjetas adaptables */
     .bio-card {
-        background-color: #F8F9FA;
+        background-color: rgba(30, 136, 229, 0.08);
         border-radius: 12px;
         padding: 20px;
         border-left: 6px solid #1E88E5;
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         margin-bottom: 20px;
+        color: inherit;
     }
     .step-card {
-        background-color: #F1F8FF;
+        background-color: rgba(67, 160, 71, 0.08);
         border-radius: 8px;
         padding: 15px;
         border-left: 4px solid #43A047;
         margin-bottom: 15px;
+        color: inherit;
     }
     .align-seq-box {
         font-family: 'Courier New', Courier, monospace;
@@ -60,8 +63,9 @@ st.markdown("""
         padding: 8px 12px;
         margin: 5px;
         text-align: center;
-        background-color: #F3E5F5;
+        background-color: rgba(126, 87, 194, 0.15);
         font-weight: bold;
+        color: inherit;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -78,9 +82,11 @@ if 'ultima_secuencia' not in st.session_state:
 
 def completar_modulo(modulo_nombre, puntos):
     if modulo_nombre not in st.session_state.modulos_completados:
-        st.session_state.modulos_completados.add(modulo_nombre)
-        st.session_state.biopuntos += puntos
-        st.toast(f"Módulo completado: +{puntos} BioPuntos")
+        # Validar que no pase de 100 puntos en total
+        if st.session_state.biopuntos + puntos <= 100:
+            st.session_state.modulos_completados.add(modulo_nombre)
+            st.session_state.biopuntos += puntos
+            st.toast(f"Módulo completado: +{puntos} BioPuntos")
 
 # Diccionario del código genético universal
 CODIGO_GENETICO = {
@@ -108,9 +114,9 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     
     st.markdown(f"""
-        <div style='background-color: #FFF3E0; padding: 15px; border-radius: 8px; border-left: 5px solid #FFB74D; text-align: center; margin-bottom: 20px;'>
-            <span style='font-size: 18px; font-weight: bold; color: #E65100;'>BioPuntos Acumulados</span><br>
-            <span style='font-size: 28px; font-weight: 800; color: #E65100;'>{st.session_state.biopuntos} pts</span>
+        <div style='background-color: rgba(255, 183, 77, 0.15); padding: 15px; border-radius: 8px; border-left: 5px solid #FFB74D; text-align: center; margin-bottom: 20px;'>
+            <span style='font-size: 18px; font-weight: bold;'>BioPuntos Acumulados</span><br>
+            <span style='font-size: 28px; font-weight: 800; color: #FFB74D;'>{st.session_state.biopuntos} pts</span>
         </div>
     """, unsafe_allow_html=True)
     
@@ -125,7 +131,7 @@ with st.sidebar:
             "Estación 4: Filogenia Molecular",
             "Estación 5: Estructura Proteica 3D",
             "Caso Clínico Integrado",
-            "Manual, Errores y Evaluación Técnica"
+            "Manual, Errores y Evaluación Técnico-Pedagógica"
         ]
     )
 
@@ -203,7 +209,7 @@ elif opcion == "Estación 1: Transcripción y Traducción":
             for c in codones:
                 amino = CODIGO_GENETICO.get(c, 'Desconocido')
                 st.markdown(f"""
-                    <div style="background-color: #EDE7F6; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #7E57C2;">
+                    <div style="background-color: rgba(126, 87, 194, 0.1); padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #7E57C2;">
                         <b>Codón:</b> <code style="color:#7E57C2;">{c}</code> -> <b>Aminoácido Asignado:</b> {amino}
                     </div>
                 """, unsafe_allow_html=True)
@@ -259,10 +265,10 @@ elif opcion == "Estación 2: Alineamiento Global":
             st.markdown("### Resultado del Alineamiento Computado")
             
             st.markdown(f"""
-            <div style="background-color: #F8F9FA; border-radius: 10px; padding: 20px; border: 1px solid #E0E0E0;">
-                <p style="margin-bottom: 5px; font-weight: bold; color: #555;">Secuencia 1 (Referencia):</p>
+            <div style="border-radius: 10px; padding: 20px; border: 1px solid rgba(128,128,128,0.2);">
+                <p style="margin-bottom: 5px; font-weight: bold;">Secuencia 1 (Referencia):</p>
                 <div class='align-seq-box'>{s1}</div>
-                <p style="margin-top: 15px; margin-bottom: 5px; font-weight: bold; color: #555;">Secuencia 2 (Objeto):</p>
+                <p style="margin-top: 15px; margin-bottom: 5px; font-weight: bold;">Secuencia 2 (Objeto):</p>
                 <div class='align-seq-box' style='color: #29B6F6;'>{s2}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -275,16 +281,16 @@ elif opcion == "Estación 2: Alineamiento Global":
             col_m1, col_m2 = st.columns(2)
             with col_m1:
                 st.markdown(f"""
-                <div style="background-color: #E8F5E9; border-left: 6px solid #43A047; padding: 15px; border-radius: 6px;">
-                    <span style="font-size: 14px; color: #2E7D32; font-weight: bold;">PUNTUACIÓN FINAL DEL ALINEAMIENTO</span><br>
-                    <span style="font-size: 24px; font-weight: 800; color: #1B5E20;">{matriz[n][m]} puntos</span>
+                <div style="background-color: rgba(67, 160, 71, 0.1); border-left: 6px solid #43A047; padding: 15px; border-radius: 6px;">
+                    <span style="font-size: 14px; color: #43A047; font-weight: bold;">PUNTUACIÓN FINAL DEL ALINEAMIENTO</span><br>
+                    <span style="font-size: 24px; font-weight: 800;">{matriz[n][m]} puntos</span>
                 </div>
                 """, unsafe_allow_html=True)
             with col_m2:
                 st.markdown(f"""
-                <div style="background-color: #E3F2FD; border-left: 6px solid #2196F3; padding: 15px; border-radius: 6px;">
-                    <span style="font-size: 14px; color: #1565C0; font-weight: bold;">PORCENTAJE DE IDENTIDAD APROXIMADO</span><br>
-                    <span style="font-size: 24px; font-weight: 800; color: #0D47A1;">{pct_identidad:.1f}% de Homología</span>
+                <div style="background-color: rgba(33, 150, 243, 0.1); border-left: 6px solid #2196F3; padding: 15px; border-radius: 6px;">
+                    <span style="font-size: 14px; color: #2196F3; font-weight: bold;">PORCENTAJE DE IDENTIDAD APROXIMADO</span><br>
+                    <span style="font-size: 24px; font-weight: 800;">{pct_identidad:.1f}% de Homología</span>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -346,7 +352,7 @@ elif opcion == "Estación 4: Filogenia Molecular":
         st.markdown("<div class='step-card'><b>Cladograma Interactivo y Reactivo en Tiempo Real</b></div>", unsafe_allow_html=True)
         
         canvas_html = f"""
-        <div style="text-align: center; background-color: #FAFAFA; padding: 15px; border-radius: 10px; border: 1px solid #E0E0E0;">
+        <div style="text-align: center; padding: 15px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.2);">
             <canvas id="treeCanvas" width="750" height="350" style="background-color: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></canvas>
         </div>
         <script>
@@ -505,7 +511,7 @@ elif opcion == "Caso Clínico Integrado":
         st.error("Respuesta Incorrecta. Observa detenidamente el penúltimo triplete: la cadena normal tiene 'GAG' mientras que el paciente presenta 'GTG'. Por favor, revisa de nuevo la secuencia.")
 
 # --- MANUAL, ERRORES Y EVALUACIÓN TÉCNICA ---
-elif opcion == "Manual, Errores y Evaluación Técnica":
+elif opcion == "Manual, Errores y Evaluación Técnico-Pedagógica":
     st.markdown("## Documentación y Evaluación del Aprendizaje")
     st.markdown("---")
     
@@ -534,7 +540,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
         st.markdown("### Examen de Conocimientos Esenciales: Fundamentos de Genética")
         st.write("Responde las siguientes 10 preguntas básicas para evaluar tus conocimientos académicos:")
         
-        # 1. ¿Qué es el ADN?
         p1 = st.radio(
             "1. ¿Qué es el ADN (Ácido Desoxirribonucleico)?",
             [
@@ -545,7 +550,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p1_eva"
         )
         
-        # 2. Bases del ADN
         p2 = st.radio(
             "2. ¿Cuáles son las cuatro bases nitrogenadas fundamentales que componen la molécula de ADN?",
             [
@@ -556,7 +560,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p2_eva"
         )
         
-        # 3. Estructura del ADN
         p3 = st.radio(
             "3. ¿Qué forma o estructura geométrica característica posee la molécula de ADN bicatenario?",
             [
@@ -567,7 +570,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p3_eva"
         )
         
-        # 4. Localización celular
         p4 = st.radio(
             "4. ¿En qué organelo especializado de las células eucariotas se localiza principalmente el ADN genómico?",
             [
@@ -578,7 +580,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p4_eva"
         )
 
-        # 5. Sustitución en el ARN
         p5 = st.radio(
             "5. ¿Qué base nitrogenada sustituye a la Timina durante el proceso de transcripción a ARN?",
             [
@@ -589,7 +590,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p5_eva"
         )
 
-        # 6. Definición de Gen
         p6 = st.radio(
             "6. ¿Qué es un gen desde el punto de vista molecular?",
             [
@@ -600,7 +600,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p6_eva"
         )
 
-        # 7. Los Cromosomas
         p7 = st.radio(
             "7. ¿Qué son los cromosomas?",
             [
@@ -611,7 +610,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p7_eva"
         )
 
-        # 8. Mutación Genética
         p8 = st.radio(
             "8. ¿A qué se refiere el término 'mutación genética'?",
             [
@@ -622,7 +620,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p8_eva"
         )
 
-        # 9. Función del ARNm
         p9 = st.radio(
             "9. ¿Cuál es la función principal del ARN mensajero (ARNm) en la célula?",
             [
@@ -633,7 +630,6 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None, key="p9_eva"
         )
 
-        # 10. Unidad estructural (Nucleótido)
         p10 = st.radio(
             "10. ¿Cuál es la unidad estructural básica (monómero) que compone los ácidos nucleicos como el ADN y el ARN?",
             [
