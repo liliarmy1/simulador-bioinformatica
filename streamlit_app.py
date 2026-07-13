@@ -326,7 +326,8 @@ elif opcion == "Estación 4: Filogenia Molecular":
     with col2: 
         sp2 = st.selectbox("Especie Dominicana B:", lista_especies, index=1)
     with col3: 
-        sp3 = st.selectbox("Especie Externa de Referencia C:", ["Homo sapiens", "Mus musculus"], index=0)
+        # Ajuste: Especies estrictamente endémicas/nativas de nuestra isla
+        sp3 = st.selectbox("Especie de Referencia C:", ["Cotorra de la Española", "Cigua Palmera"], index=0)
         
     st.markdown("### Parámetro de Distancia Evolutiva")
     d12 = st.slider(f"Distancia genética estimada entre {sp1} y {sp2}:", min_value=1, max_value=20, value=8)
@@ -412,7 +413,7 @@ elif opcion == "Estación 4: Filogenia Molecular":
             ctx.stroke();
 
             ctx.fillStyle = "#C62828";
-            ctx.fillText("{sp3} (Grupo Externo)", 535, 275);
+            ctx.fillText("{sp3} (Grupo de Control)", 535, 275);
         </script>
         """
         components.html(canvas_html, height=390)
@@ -470,7 +471,7 @@ elif opcion == "Estación 5: Estructura Proteica 3D":
         st.write(f"Dimensión Estructural: {info_p['aa']}")
         st.write(f"Patología Asociada: {info_p['enf']}")
         
-    completar_modulo("Estructuras", 20)
+    completar_modulo("Estructures", 20)
 
 # --- CASO CLÍNICO INTEGRADO ---
 elif opcion == "Caso Clínico Integrado":
@@ -492,7 +493,7 @@ elif opcion == "Caso Clínico Integrado":
         st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
         completar_modulo("CasoClinico", 20)
 
-# --- DOCUMENTACIÓN Y EVALUACIÓN AMPLIADA A 10 PREGUNTAS ---
+# --- DOCUMENTACIÓN Y EVALUACIÓN ---
 elif opcion == "Manual, Errores y Evaluación Técnica":
     st.title("Documentación y Evaluación del Aprendizaje")
     
@@ -512,7 +513,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
     with tab2:
         st.markdown("""
             ### Sistema Interno de Gestión de Excepciones
-            * **Caracteres No Biológicos:** El sistema bloquea de manera inmediata cualquier análisis si la secuencia de ADN de entrada includes caracteres fuera de las bases estandarizadas (A, T, C, G).
+            * **Caracteres No Biológicos:** El sistema bloquea de manera inmediata cualquier análisis si la secuencia de ADN de entrada contiene caracteres fuera de las bases estandarizadas (A, T, C, G).
             * **Desajuste de k-meros:** Control lógico para impedir que la variable del deslizador supere la extensión lineal real de la secuencia genómica dada.
         """)
         
