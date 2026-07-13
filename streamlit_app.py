@@ -492,7 +492,7 @@ elif opcion == "Caso Clínico Integrado":
         st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
         completar_modulo("CasoClinico", 20)
 
-# --- DOCUMENTACIÓN Y EVALUACIÓN CON OPCIONES EN BLANCO ---
+# --- DOCUMENTACIÓN Y EVALUACIÓN AMPLIADA A 10 PREGUNTAS ---
 elif opcion == "Manual, Errores y Evaluación Técnica":
     st.title("Documentación y Evaluación del Aprendizaje")
     
@@ -512,15 +512,15 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
     with tab2:
         st.markdown("""
             ### Sistema Interno de Gestión de Excepciones
-            * **Caracteres No Biológicos:** El sistema bloquea de manera inmediata cualquier análisis si la secuencia de ADN de entrada incluye caracteres fuera de las bases estandarizadas (A, T, C, G).
+            * **Caracteres No Biológicos:** El sistema bloquea de manera inmediata cualquier análisis si la secuencia de ADN de entrada includes caracteres fuera de las bases estandarizadas (A, T, C, G).
             * **Desajuste de k-meros:** Control lógico para impedir que la variable del deslizador supere la extensión lineal real de la secuencia genómica dada.
         """)
         
     with tab3:
         st.markdown("### Examen de Conocimientos Esenciales: Fundamentos de Genética")
-        st.write("Responde las siguientes preguntas básicas para evaluar tus conocimientos académicos:")
+        st.write("Responde las siguientes 10 preguntas básicas para evaluar tus conocimientos académicos:")
         
-        # Pregunta 1: ¿Qué es el ADN? (index=None para que inicie desmarcada)
+        # 1. ¿Qué es el ADN?
         p1 = st.radio(
             "1. ¿Qué es el ADN (Ácido Desoxirribonucleico)?",
             [
@@ -531,7 +531,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None
         )
         
-        # Pregunta 2: ¿Cuáles son las bases del ADN?
+        # 2. Bases del ADN
         p2 = st.radio(
             "2. ¿Cuáles son las cuatro bases nitrogenadas fundamentales que componen la molécula de ADN?",
             [
@@ -542,9 +542,9 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None
         )
         
-        # Pregunta 3: Estructura del ADN
+        # 3. Estructura del ADN
         p3 = st.radio(
-            "3. ¿Qué forma o estructura geométrica característica posee la molécula de ADN bicatenario de acuerdo con el modelo molecular estandarizado?",
+            "3. ¿Qué forma o estructura geométrica característica posee la molécula de ADN bicatenario?",
             [
                 "Estructura lineal simple monocatenaria.",
                 "Forma de doble hélice o escala de caracol helicoidal.",
@@ -553,7 +553,7 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             index=None
         )
         
-        # Pregunta 4: Localización celular
+        # 4. Localización celular
         p4 = st.radio(
             "4. ¿En qué organelo especializado de las células eucariotas se localiza principalmente el ADN genómico?",
             [
@@ -563,22 +563,95 @@ elif opcion == "Manual, Errores y Evaluación Técnica":
             ],
             index=None
         )
+
+        # 5. Sustitución en el ARN
+        p5 = st.radio(
+            "5. ¿Qué base nitrogenada sustituye a la Timina durante el proceso de transcripción a ARN?",
+            [
+                "Uracilo.",
+                "Guanina.",
+                "Adenina."
+            ],
+            index=None
+        )
+
+        # 6. Definición de Gen
+        p6 = st.radio(
+            "6. ¿Qué es un gen desde el punto de vista molecular?",
+            [
+                "Un segmento específico de ADN que contiene las instrucciones para sintetizar una proteína o ARN funcional.",
+                "Un orgánulo celular responsable de la digestión de macromoléculas defectuosas.",
+                "La secuencia completa de aminoácidos unidos en un enlace peptídico circular."
+            ],
+            index=None
+        )
+
+        # 7. Los Cromosomas
+        p7 = st.radio(
+            "7. ¿Qué son los cromosomas?",
+            [
+                "Estructuras altamente condensadas formadas por ADN y proteínas que se organizan durante la división celular.",
+                "Moléculas lipídicas que delimitan la membrana plasmática.",
+                "Vesículas citoplasmáticas que transportan proteínas exógenas."
+            ],
+            index=None
+        )
+
+        # 8. Mutación Genética
+        p8 = st.radio(
+            "8. ¿A qué se refiere el término 'mutación genética'?",
+            [
+                "A cualquier cambio o alteración permanente en la secuencia de nucleótidos del ADN.",
+                "Al proceso normal de duplicación exacta de las cadenas celulares.",
+                "A la destrucción programada de las mitocondrias por falta de oxígeno."
+            ],
+            index=None
+        )
+
+        # 9. Función del ARNm
+        p9 = st.radio(
+            "9. ¿Cuál es la función principal del ARN mensajero (ARNm) en la célula?",
+            [
+                "Llevar la información genética copiada del ADN desde el núcleo hacia los ribosomas para la síntesis de proteínas.",
+                "Catalizar la degradación de los azúcares en la respiración celular anaeróbica.",
+                "Unir físicamente los fosfatos para dar rigidez a la pared celular de los tejidos."
+            ],
+            index=None
+        )
+
+        # 10. Unidad estructural (Nucleótido)
+        p10 = st.radio(
+            "10. ¿Cuál es la unidad estructural básica (monómero) que compone los ácidos nucleicos como el ADN y el ARN?",
+            [
+                "El Aminoácido.",
+                "El Nucleótido (compuesto por un azúcar, un fosfato y una base nitrogenada).",
+                "El Ácido graso saturado."
+            ],
+            index=None
+        )
         
         if st.button("Enviar y Calificar Evaluación"):
-            # Control por si intentan enviar la evaluación con campos vacíos
-            if p1 is None or p2 is None or p3 is None or p4 is None:
-                st.warning("Por favor, responde a todas las preguntas del examen antes de enviar tu calificación.")
+            # Comprobación estricta de que las 10 preguntas tengan respuesta
+            preguntas = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
+            if any(p is None for p in preguntas):
+                st.warning("Por favor, responde a todas las preguntas (1 a 10) del examen antes de enviar tu calificación.")
             else:
                 nota = 0
-                if p1 == "La macromolécula que almacena y transmite la información genética de los seres vivos.": nota += 25
-                if p2 == "Adenina, Timina, Citosina y Guanina.": nota += 25
-                if p3 == "Forma de doble hélice o escala de caracol helicoidal.": nota += 25
-                if p4 == "En el Núcleo celular.": nota += 25
+                if p1 == "La macromolécula que almacena y transmite la información genética de los seres vivos.": nota += 10
+                if p2 == "Adenina, Timina, Citosina y Guanina.": nota += 10
+                if p3 == "Forma de doble hélice o escala de caracol helicoidal.": nota += 10
+                if p4 == "En el Núcleo celular.": nota += 10
+                if p5 == "Uracilo.": nota += 10
+                if p6 == "Un segmento específico de ADN que contiene las instrucciones para sintetizar una proteína o ARN funcional.": nota += 10
+                if p7 == "Estructuras altamente condensadas formadas por ADN y proteínas que se organizan durante la división celular.": nota += 10
+                if p8 == "A cualquier cambio o alteración permanente en la secuencia de nucleótidos del ADN.": nota += 10
+                if p9 == "Llevar la información genética copiada del ADN desde el núcleo hacia los ribosomas para la síntesis de proteínas.": nota += 10
+                if p10 == "El Nucleótido (compuesto por un azúcar, un fosfato y una base nitrogenada).": nota += 10
                 
                 st.markdown(f"### Resultado Final de la Evaluación: `{nota} / 100` puntos.")
                 if nota == 100:
                     st.success("¡Excelente! Has demostrado un conocimiento perfecto de las bases esenciales de la genética.")
-                elif nota >= 50:
+                elif nota >= 70:
                     st.warning("Buen intento. Has aprobado la evaluación, pero se recomienda repasar los conceptos fundamentales.")
                 else:
                     st.error("Te sugerimos volver a revisar el material de estudio e intentar la evaluación de nuevo para consolidar tu aprendizaje.")
