@@ -1,5 +1,4 @@
 BioInnova/
-│
 ├── app.py
 ├── style.css
 ├── requirements.txt
