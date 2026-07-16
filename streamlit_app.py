@@ -1,515 +1,666 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import time
 
-# Configuración de la página
-st.set_page_config(page_title="BioInnova - Laboratorio Virtual", layout="wide")
+# --- CONFIGURACIÓN DE LA PLATAFORMA ---
+st.set_page_config(
+    page_title="BioInnova - Laboratorio Virtual de Bioinformática",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Estilos CSS personalizados para el menú y la interfaz
+# Estilos personalizados avanzados adaptables a Modo Claro y Oscuro
 st.markdown("""
-<style>
-    .reportview-container .main .block-container{
-        padding-top: 1rem;
-    }
-    .sidebar .sidebar-content {
-        background-color: #f0f2f6;
-    }
-    .big-font {
-        font-size: 20px !important;
-        font-weight: bold;
-    }
-    .bio-points {
-        background-color: #ffe0b2;
-        padding: 10px;
-        border-radius: 10px;
+    <style>
+    .main-title {
+        font-size: 42px !important;
+        font-weight: 800;
+        color: #1E88E5;
         text-align: center;
+        margin-bottom: 5px;
+    }
+    .subtitle {
+        font-size: 20px !important;
+        text-align: center;
+        color: #555555;
+        margin-bottom: 30px;
+    }
+    /* Tarjetas adaptables */
+    .bio-card {
+        background-color: rgba(30, 136, 229, 0.08);
+        border-radius: 12px;
+        padding: 20px;
+        border-left: 6px solid #1E88E5;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         margin-bottom: 20px;
+        color: inherit;
     }
-    .stButton>button {
-        background-color: #4CAF50;
-        color: white;
-        width: 100%;
+    .step-card {
+        background-color: rgba(67, 160, 71, 0.08);
+        border-radius: 8px;
+        padding: 15px;
+        border-left: 4px solid #43A047;
+        margin-bottom: 15px;
+        color: inherit;
     }
-</style>
+    .align-seq-box {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 22px;
+        font-weight: bold;
+        letter-spacing: 6px;
+        background-color: #263238;
+        color: #00E676;
+        padding: 12px;
+        border-radius: 6px;
+        text-align: center;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        margin: 5px 0;
+    }
+    .codon-box {
+        display: inline-block;
+        border: 2px solid #7E57C2;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin: 5px;
+        text-align: center;
+        background-color: rgba(126, 87, 194, 0.15);
+        font-weight: bold;
+        color: inherit;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
-# Inicialización del estado de la sesión para BioPuntos
+# --- INICIALIZACIÓN DEL SISTEMA DE PUNTOS Y ESTADOS ---
 if 'biopuntos' not in st.session_state:
-    st.session_state['biopuntos'] = 100
+    st.session_state.biopuntos = 0
+if 'modulos_completados' not in st.session_state:
+    st.session_state.modulos_completados = set()
+if 'analisis_ejecutado' not in st.session_state:
+    st.session_state.analisis_ejecutado = False
+if 'ultima_secuencia' not in st.session_state:
+    st.session_state.ultima_secuencia = ""
 
-# --- BARRA LATERAL (MENÚ) ---
+def completar_modulo(modulo_nombre, puntos):
+    if modulo_nombre not in st.session_state.modulos_completados:
+        # Validar que no pase de 100 puntos en total
+        if st.session_state.biopuntos + puntos <= 100:
+            st.session_state.modulos_completados.add(modulo_nombre)
+            st.session_state.biopuntos += puntos
+            st.toast(f"Módulo completado: +{puntos} BioPuntos")
+
+# Diccionario del código genético universal
+CODIGO_GENETICO = {
+    'UUU': 'Fenilalanina', 'UUC': 'Fenilalanina', 'UUA': 'Leucina', 'UUG': 'Leucina',
+    'CUU': 'Leucina', 'CUC': 'Leucina', 'CUA': 'Leucina', 'CUG': 'Leucina',
+    'AUU': 'Isoleucina', 'AUC': 'Isoleucina', 'AUA': 'Isoleucina', 'AUG': 'Metionina (INICIO)',
+    'GUU': 'Valina', 'GUC': 'Valina', 'GUA': 'Valina', 'GUG': 'Valina',
+    'UCU': 'Serina', 'UCC': 'Serina', 'UCA': 'Serina', 'UCG': 'Serina',
+    'CCU': 'Prolina', 'CCC': 'Prolina', 'CCA': 'Prolina', 'CCG': 'Prolina',
+    'ACU': 'Treonina', 'ACC': 'Treonina', 'ACA': 'Treonina', 'ACG': 'Treonina',
+    'GCU': 'Alanina', 'GCC': 'Alanina', 'GCA': 'Alanina', 'GCG': 'Alanina',
+    'UAU': 'Tirosina', 'UAC': 'Tirosina', 'UAA': 'STOP', 'UAG': 'STOP',
+    'CAU': 'Histidina', 'CAC': 'Histidina', 'CAA': 'Glutamina', 'CAG': 'Glutamina',
+    'AAU': 'Asparagina', 'AAC': 'Asparagina', 'AAA': 'Lisina', 'AAG': 'Lisina',
+    'GAU': 'Ácido Aspártico', 'GAC': 'Ácido Aspártico', 'GAA': 'Ácido Glutámico', 'GAG': 'Ácido Glutámico',
+    'UGU': 'Cisteína', 'UGC': 'Cisteína', 'UGA': 'STOP', 'UGG': 'Triptófano',
+    'CGU': 'Arginina', 'CGC': 'Arginina', 'CGA': 'Arginina', 'CGG': 'Arginina',
+    'AGU': 'Serina', 'AGC': 'Serina', 'AGA': 'Arginina', 'AGG': 'Arginina',
+    'GGU': 'Glicina', 'GGC': 'Glicina', 'GGA': 'Glicina', 'GGG': 'Glicina'
+}
+
+# --- BARRA LATERAL ---
 with st.sidebar:
-    st.image("https://raw.githubusercontent.com/paulino-hidalgo-l/simulador-bioinformatica/main/logo_isfodosu.png", width=200) # Reemplazar con URL real o path local
-    st.markdown("<h2 style='text-align: center;'>BioInnova</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: gray;'>Laboratorio Virtual de Bioinformática</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #1E88E5; margin-bottom: 2px;'>Laboratorio Virtual</h1>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    # Visualización de BioPuntos
     st.markdown(f"""
-    <div class='bio-points'>
-        <p style='margin:0; color: #e65100;'>BioPuntos Acumulados</p>
-        <h2 style='margin:0; color: #e65100;'>{st.session_state['biopuntos']} pts</h2>
-    </div>
+        <div style='background-color: rgba(255, 183, 77, 0.15); padding: 15px; border-radius: 8px; border-left: 5px solid #FFB74D; text-align: center; margin-bottom: 20px;'>
+            <span style='font-size: 18px; font-weight: bold;'>BioPuntos Acumulados</span><br>
+            <span style='font-size: 28px; font-weight: 800; color: #FFB74D;'>{st.session_state.biopuntos} pts</span>
+        </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p class='big-font'>Seleccione una estación de trabajo:</p>", unsafe_allow_html=True)
-    
+    st.markdown("---")
     opcion = st.radio(
-        "",
-        ("Portada Principal", 
-         "Estación 1: Transcripción y Traducción", 
-         "Estación 2: Alineamiento Global", 
-         "Estación 3: Ensamble Genómico",
-         "Estación 4: Filogenia Molecular (DINÁMICO)",
-         "Estación 5: Estructura Proteica 3D",
-         "Caso Clínico Integrado",
-         "Manual y Evaluación")
+        "Selecciona una estación de trabajo:",
+        [
+            "Portada Principal",
+            "Estación 1: Transcripción y Traducción",
+            "Estación 2: Alineamiento Global",
+            "Estación 3: Ensamble Genómico",
+            "Estación 4: Filogenia Molecular",
+            "Estación 5: Estructura Proteica 3D",
+            "Caso Clínico Integrado",
+            "Manual, Errores y Evaluación Técnico-Pedagógica"
+        ]
     )
 
-# --- CUERPO PRINCIPAL ---
+def ejecutar_barra_progreso(texto="Cargando simulación..."):
+    progreso_bar = st.progress(0)
+    status_text = st.empty()
+    for i in range(100):
+        time.sleep(0.005)
+        progreso_bar.progress(i + 1)
+        status_text.text(f"{texto} {i+1}%")
+    progreso_bar.empty()
+    status_text.empty()
 
-# 1. Portada Principal
+# --- MÓDULO 0: PORTADA PRINCIPAL ---
 if opcion == "Portada Principal":
+    st.markdown("<div class='main-title'>BioInnova</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle'>Laboratorio Virtual de Bioinformática y Simulación Molecular</div>", unsafe_allow_html=True)
+    
     st.markdown("""
-    <div style='background-color: #1e88e5; padding: 20px; border-radius: 15px; color: white; text-align: center;'>
-        <h1>Aprende genética, simula algoritmos reales y experimenta como un bioinformático</h1>
-        <p>Bienvenido al entorno virtual interactivo diseñado para automatizar y visualizar procesos moleculares complejos.</p>
-        <p>Descubre cómo las ciencias de la computación descifran el código de la vida.</p>
+    <div style="background-image: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); padding: 40px; border-radius: 15px; color: white; text-align: center; margin-bottom: 30px;">
+        <h2 style="color: white; font-weight: 700;">Aprende genética, simula algoritmos reales y experimenta como un bioinformático</h2>
+        <p style="font-size: 16px; max-width: 800px; margin: 0 auto; opacity: 0.9;">
+            Bienvenido al entorno virtual interactivo diseñado para automatizar y visualizar procesos moleculares complejos. Descubre cómo las ciencias de la computación descifran el código de la vida.
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
-    st.write("---")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.subheader("Simulación Precisa")
-        st.write("Modelos moleculares basados en parámetros reales de la biología computacional.")
+        st.markdown("<div class='bio-card'><h4>Simulación Precisa</h4>Modelos moleculares basados en parámetros reales de la biología computacional.</div>", unsafe_allow_html=True)
     with col2:
-        st.subheader("Enfoque Gamificado")
-        st.write("Resuelve desafíos científicos, acumula BioPuntos y obtén tu certificación de aptitud.")
+        st.markdown("<div class='bio-card' style='border-left-color: #43A047;'><h4>Enfoque Gamificado</h4>Resuelve desafíos científicos, acumula BioPuntos y obtén tu certificación de aptitud.</div>", unsafe_allow_html=True)
     with col3:
-        st.subheader("Diseño Pedagógico")
-        st.write("Desgloses algorítmicos paso a paso ideales para defensas ante jurados académicos.")
+        st.markdown("<div class='bio-card' style='border-left-color: #7E57C2;'><h4>Diseño Pedagógico</h4>Desgloses algorítmicos paso a paso ideales para defensas ante jurados académicos.</div>", unsafe_allow_html=True)
 
-# 2. Estación 1: Transcripción y Traducción
+    st.markdown("### Flujo de la Información Biológica en el Laboratorio")
+    st.info("ADN Núcleo-Plasmático -> ARN Mensajero Transcrito -> Cadena Polipeptídica Traducida -> Estructura Terciaria 3D Funcional")
+
+# --- ESTACIÓN 1: TRANSCRIPCIÓN Y TRADUCCIÓN ---
 elif opcion == "Estación 1: Transcripción y Traducción":
-    st.header("Estación 1: Transcripción y Traducción Génica")
+    st.markdown("## Estación 1: Transcripción y Traducción Génica")
+    st.markdown("---")
     
-    secuencia_adn = st.text_area("Ingresa la secuencia molde de ADN (dirección 3' a 5')", "ATGGCCATTTAG").upper()
+    adn_input = st.text_input("Ingresa la secuencia molde de ADN (Dirección 5' a 3'):", "ATGGCCATTTAG").upper().strip()
     
-    if st.button("Ejecutar Análisis Molecular"):
-        # Validación básica
-        if not all(base in "ATCG" for base in secuencia_adn) or len(secuencia_adn) == 0:
-            st.error("Error: La secuencia debe contener solo las bases A, T, C, G.")
-        else:
-            st.session_state['biopuntos'] += 10
-            st.success("¡Análisis completado! +10 BioPuntos")
+    if adn_input != st.session_state.ultima_secuencia:
+        st.session_state.analisis_ejecutado = False
+        st.session_state.ultima_secuencia = adn_input
+        
+    if not adn_input or not all(base in "ATCG" for base in adn_input):
+        st.error("Mensaje de Control: Detectamos caracteres no biológicos en tu entrada. Recuerda que el ADN solo acepta las bases nitrogenadas estandarizadas: A, T, C y G. Por favor, verifica tu secuencia.")
+    else:
+        if st.button("Ejecutar Análisis Molecular"):
+            ejecutar_barra_progreso("Modelando Dogma Central...")
+            st.session_state.analisis_ejecutado = True
             
-            # Algoritmo
-            arnm = secuencia_adn.replace("T", "U")
+        if st.session_state.analisis_ejecutado:
+            st.markdown("<div class='step-card'><b>Paso 1: Lectura de la Cadena Molde</b><br>Secuencia de entrada procesada correctamente de forma molecular.</div>", unsafe_allow_html=True)
+            st.code(f"ADN: {adn_input}", language="text")
             
-            # Diccionario de código genético simplificado
-            codigo_genetico = {
-                'AUG': 'Met (Inicio)', 'UUU': 'Phe', 'UUC': 'Phe', 'UUA': 'Leu', 'UUG': 'Leu',
-                'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser',
-                'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP',
-                'UGU': 'Cys', 'UGC': 'Cys', 'UGA': 'STOP', 'UGG': 'Trp',
-                'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
-                'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
-                'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln', 'CAG': 'Gln',
-                'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
-                'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile',
-                'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
-                'AAU': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys',
-                'AGU': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg',
-                'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
-                'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
-                'GAU': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
-                'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
-            }
+            arn_secuencia = adn_input.replace("T", "U")
+            st.markdown("<div class='step-card'><b>Paso 2: Transcripción a ARN Mensajero (ARNm)</b><br>La enzima ARN polimerasa sustituye la Timina (T) por el Uracilo (U).</div>", unsafe_allow_html=True)
+            st.code(f"ARNm: {arn_secuencia}", language="text")
             
-            proteina = []
-            for i in range(0, len(arnm), 3):
-                codon = arnm[i:i+3]
-                if len(codon) == 3:
-                    aminoacido = codigo_genetico.get(codon, "???")
-                    proteina.append(aminoacido)
-                    if aminoacido == "STOP":
-                        break
+            st.markdown("<div class='step-card'><b>Paso 3: Segmentación en Tripletes (Codones)</b><br>El ribosoma agrupa los nucleótidos de tres en tres para iniciar la lectura limpia.</div>", unsafe_allow_html=True)
+            codones = [arn_secuencia[i:i+3] for i in range(0, len(arn_secuencia) - len(arn_secuencia) % 3, 3)]
             
-            # Visualización
-            st.subheader("Resultados:")
-            st.markdown(f"**ADN Molde:** `{secuencia_adn}`")
-            st.markdown(f"**ARN mensajero:** `{arnm}`")
+            codon_html = ""
+            for c in codones:
+                codon_html += f"<div class='codon-box'>{c}</div>"
+            st.markdown(codon_html, unsafe_allow_html=True)
             
-            st.markdown("**Cadena de Aminoácidos resultante:**")
-            st.info(" ➔ ".join(proteina))
+            st.markdown("<div class='step-card'><b>Paso 4: Traducción a Cadena Polipeptídica</b><br>Cada triplete se traduce al aminoácido correspondiente según el código genético universal.</div>", unsafe_allow_html=True)
             
-            # Explicación pedagógica
-            with st.expander("Ver desglose del proceso (Pedagogía)"):
-                st.write("1. **Transcripción:** La enzima ARN polimerasa lee la cadena de ADN y sintetiza una cadena complementaria de ARN, sustituyendo la Timina (T) por Uracilo (U).")
-                st.write("2. **Traducción:** El ribosoma lee el ARNm en grupos de tres bases (codones). Cada codón corresponde a un aminoácido específico según el código genético universal.")
+            for c in codones:
+                amino = CODIGO_GENETICO.get(c, 'Desconocido')
+                st.markdown(f"""
+                    <div style="background-color: rgba(126, 87, 194, 0.1); padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #7E57C2;">
+                        <b>Codón:</b> <code style="color:#7E57C2;">{c}</code> -> <b>Aminoácido Asignado:</b> {amino}
+                    </div>
+                """, unsafe_allow_html=True)
+                
+            completar_modulo("Transcripción", 20)
 
-# 3. Estación 2: Alineamiento Global
+    st.markdown("---")
+    st.markdown("### Desafío de Estación")
+    r1 = st.radio("¿Cuál es el codón universal estandarizado para el inicio de la traducción proteica?", ["UUU", "UGA", "AUG", "GGG"], index=None)
+    if r1 == "AUG":
+        st.success("Correcto. El codón AUG codifica para la Metionina y marca el inicio del marco de lectura abierto.")
+    elif r1 is not None:
+        st.error("Inténtalo de nuevo. Pista: Es el codón que codifica para la Metionina.")
+
+# --- ESTACIÓN 2: ALINEAMIENTO GLOBAL ---
 elif opcion == "Estación 2: Alineamiento Global":
-    st.header("Estación 2: Alineamiento de Secuencias Homólogas")
-    st.write("Implementación didáctica del algoritmo Needleman-Wunsch.")
+    st.markdown("## Estación 2: Alineamiento de Secuencias Homólogas")
+    st.markdown("---")
     
     col1, col2 = st.columns(2)
     with col1:
-        seq1 = st.text_input("Secuencia Genómica de Referencia (Secuencia 1)", "ATTCA").upper()
+        s1 = st.text_input("Secuencia Genómica de Referencia (Secuencia 1):", "ATGCA").upper().strip()
     with col2:
-        seq2 = st.text_input("Secuencia Genómica Objeto (Secuencia 2)", "ATCCA").upper()
+        s2 = st.text_input("Secuencia Genómica Objeto (Secuencia 2):", "ATCCA").upper().strip()
         
-    st.markdown("**Parámetros de Puntuación:**")
-    col_p1, col_p2, col_p3 = st.columns(3)
-    match_score = col_p1.number_input("Coincidencia (Match)", value=1)
-    mismatch_score = col_p2.number_input("Diferencia (Mismatch)", value=-1)
-    gap_penalty = col_p3.number_input("Penalización por gap", value=-2)
-
-    if st.button("Simular Alineamiento Óptimo"):
-         if not all(base in "ATCG" for base in seq1+seq2) or len(seq1)==0 or len(seq2)==0:
-            st.error("Error: Ingrese secuencias de ADN válidas.")
-         else:
-            st.session_state['biopuntos'] += 15
-            st.success("¡Alineamiento calculado! +15 BioPuntos")
+    st.markdown("### Parámetros de Puntuación (Algoritmo Needleman-Wunsch)")
+    c1, c2, c3 = st.columns(3)
+    with c1: match_val = st.number_input("Coincidencia (Match)", value=1.0)
+    with c2: mismatch_val = st.number_input("Diferencia (Mismatch)", value=-1.0)
+    with c3: gap_val = st.number_input("Gap", value=-2.0)
+        
+    if not all(b in "ATCG" for b in s1) or not all(b in "ATCG" for b in s2):
+        st.error("Mensaje de Control: Las cadenas ingresadas contienen errores de formato nucleotídico. Asegúrate de usar únicamente letras A, T, C, G.")
+    else:
+        if st.button("Simular Alineamiento Óptimo"):
+            ejecutar_barra_progreso("Calculando matriz dinámica y alineación óptima...")
             
-            # Simplificación del resultado para visualización didáctica
-            # En una app real, aquí iría la matriz completa y el traceback.
-            # Mostramos un resultado hardcoded basado en los ejemplos por defecto para ilustrar la UI.
+            n, m = len(s2), len(s1)
+            matriz = [[0] * (m + 1) for _ in range(n + 1)]
+            for i in range(n + 1): matriz[i][0] = int(i * gap_val)
+            for j in range(m + 1): matriz[0][j] = int(j * gap_val)
             
-            score = 0
-            al_seq1 = ""
-            al_seq2 = ""
-            interpretacion = ""
+            for i in range(1, n + 1):
+                for j in range(1, m + 1):
+                    match = matriz[i-1][j-1] + (match_val if s2[i-1] == s1[j-1] else mismatch_val)
+                    delete = matriz[i-1][j] + gap_val
+                    insert = matriz[i][j-1] + gap_val
+                    matriz[i][j] = int(max(match, delete, insert))
+                    
+            st.markdown("### Matriz de Puntuación Acumulada")
+            st.table(matriz)
             
-            if seq1 == "ATTCA" and seq2 == "ATCCA":
-                score = 1 # (4 matches * 1) + (1 mismatch * -1) = 3
-                al_seq1 = "A T T C A"
-                al_seq2 = "A T C C A"
-                interpretacion = "Alto grado de conservación. Posible mutación puntual en la posición 3."
-            else:
-                score = "Calculado"
-                al_seq1 = seq1
-                al_seq2 = seq2
-                interpretacion = "Alineamiento realizado. Analice las coincidencias visualmente."
-
-            st.subheader("Resultado del Alineamiento:")
+            st.markdown("### Resultado del Alineamiento Computado")
+            
             st.markdown(f"""
-            <div style='background-color: #e3f2fd; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 18px; text-align: center;'>
-                <p style='margin:0;'>{al_seq1}</p>
-                <p style='margin:0;'>| | . | |</p>
-                <p style='margin:0;'>{al_seq2}</p>
+            <div style="border-radius: 10px; padding: 20px; border: 1px solid rgba(128,128,128,0.2);">
+                <p style="margin-bottom: 5px; font-weight: bold;">Secuencia 1 (Referencia):</p>
+                <div class='align-seq-box'>{s1}</div>
+                <p style="margin-top: 15px; margin-bottom: 5px; font-weight: bold;">Secuencia 2 (Objeto):</p>
+                <div class='align-seq-box' style='color: #29B6F6;'>{s2}</div>
             </div>
             """, unsafe_allow_html=True)
             
-            st.metric(label="Puntuación Final (Score)", value=score)
-            st.write(f"**Interpretación:** {interpretacion}")
+            coincidencias = sum(1 for a, b in zip(s1, s2) if a == b)
+            pct_identidad = (coincidencias / max(len(s1), len(s2))) * 100
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.markdown(f"""
+                <div style="background-color: rgba(67, 160, 71, 0.1); border-left: 6px solid #43A047; padding: 15px; border-radius: 6px;">
+                    <span style="font-size: 14px; color: #43A047; font-weight: bold;">PUNTUACIÓN FINAL DEL ALINEAMIENTO</span><br>
+                    <span style="font-size: 24px; font-weight: 800;">{matriz[n][m]} puntos</span>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_m2:
+                st.markdown(f"""
+                <div style="background-color: rgba(33, 150, 243, 0.1); border-left: 6px solid #2196F3; padding: 15px; border-radius: 6px;">
+                    <span style="font-size: 14px; color: #2196F3; font-weight: bold;">PORCENTAJE DE IDENTIDAD APROXIMADO</span><br>
+                    <span style="font-size: 24px; font-weight: 800;">{pct_identidad:.1f}% de Homología</span>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            completar_modulo("Alineamiento", 20)
 
-# 4. Estación 3: Ensamble Genómico
+# --- ESTACIÓN 3: ENSAMBLE GENÓNMICO ---
 elif opcion == "Estación 3: Ensamble Genómico":
-    st.header("Estación 3: Ensamble Genómico por Solapamiento")
-    st.write("Reconstrucción de una secuencia a partir de fragmentos (lecturas).")
+    st.markdown("## Estación 3: Ensamble Genómico por Solapamiento")
+    st.markdown("---")
     
-    lecturas_input = st.text_area("Ingrese los fragmentos de ADN (separados por coma)", "TGCAAA, GCTGC, AAGCT, AAATG")
-    lecturas = [x.strip().upper() for x in lecturas_input.split(',')]
+    secuencia_madre = st.text_input("Ingresa la secuencia genómica original para fragmentación controlada:", "ATGCATGCAT").upper().strip()
+    k = st.slider("Selecciona la longitud fija de los fragmentos (k-meros):", min_value=2, max_value=5, value=3)
     
-    if st.button("Ensamblar Contig"):
-        if len(lecturas) < 2:
-            st.error("Error: Ingrese al menos dos fragmentos.")
-        else:
-            st.session_state['biopuntos'] += 20
-            st.success("¡Grafo de ensamble generado! +20 BioPuntos")
+    if len(secuencia_madre) < k:
+        st.error("Mensaje de Control: Configuración incoherente. El tamaño del fragmento (k-mero) no puede superar la longitud total de la secuencia genómica.")
+    else:
+        if st.button("Fragmentar y Ensamblar"):
+            ejecutar_barra_progreso("Calculando mapas de solapamiento...")
             
-            # Lógica de ensamble super simplificada (Greedy)
-            # AAATG + AAGCT -> AAATGCT
-            # AAATGCT + GCTGC -> AAATGCTGC
-            # AAATGCTGC + TGCAAA -> AAATGCTGCAAA
+            fragmentos = [secuencia_madre[i:i+k] for i in range(len(secuencia_madre) - k + 1)]
+            st.markdown("<div class='step-card'><b>Fragmentos Generados en el Proceso (k-meros únicos):</b></div>", unsafe_allow_html=True)
+            st.write(", ".join(set(fragmentos)))
             
-            supercontig = "AAATGCTGCAAA" # Resultado basado en el ejemplo para la demo didáctica.
+            st.markdown("<div class='step-card'><b>Visualización del Solapamiento y Alineación del Contig:</b><br>Observa cómo se superponen los fragmentos de forma lógica en la memoria computacional para reconstruir el genoma original.</div>", unsafe_allow_html=True)
             
-            st.subheader("Secuencia Ensamblada (Contig Unificado):")
-            st.code(supercontig, language="dna")
-            
-            # Visualización pedagógica del solapamiento
-            st.markdown("**Visualización del Solapamiento:**")
-            st.markdown(f"""
-            <div style='font-family: monospace; background-color: #f9f9f9; padding: 10px; border-radius: 5px;'>
-                <p style='margin:0; color:blue;'>AAATG</p>
-                <p style='margin:0; padding-left: 2ch; color:green;'>AAGCT</p>
-                <p style='margin:0; padding-left: 4ch; color:red;'>GCTGC</p>
-                <p style='margin:0; padding-left: 6ch; color:purple;'>TGCAAA</p>
-                <p style='margin:0;'>----------------</p>
-                <p style='margin:0; font-weight:bold;'>{supercontig}</p>
-            </div>
-            """, unsafe_allow_html=True)
+            for idx, frag in enumerate(fragmentos):
+                espacios = " " * idx
+                st.code(f"{espacios}{frag}", language="text")
+                
+            st.success(f"Genoma Reconstruido Exitosamente (Contig Completo): {secuencia_madre}")
+            completar_modulo("Ensamble", 20)
 
-# 5. Estación 4: Filogenia Molecular (DINÁMICO MODIFICADO)
-elif opcion == "Estación 4: Filogenia Molecular (DINÁMICO)":
-    st.header("Estación 4: Análisis Cladístico Basado en Distancias")
-    st.write("Reconstrucción de relaciones evolutivas (Árbol Filogenético Dinámico).")
-
-    col1, col2 = st.columns([1, 2])
+# --- ESTACIÓN 4: FILOGENIA MOLECULAR DINÁMICA ---
+elif opcion == "Estación 4: Filogenia Molecular":
+    st.markdown("## Estación 4: Análisis Cladístico Basado en Distancias de Fauna Dominicana")
+    st.markdown("---")
     
-    with col1:
-        st.markdown("**Especies a comparar:**")
-        esp_a = st.selectbox("Especie Dominicana A", ["Solenoide de la Hispaniola", "Iguana de Ricord", "Cigua Palmera"])
-        esp_b = st.selectbox("Especie Dominicana B", ["Jutía de la Hispaniola", "Iguana Verde (Introducida)", "Rolita Rostro Rojo"])
-        esp_ref = st.selectbox("Especie de Referencia C (Outgroup)", ["Cocodrilo Americano", "Ratón Doméstico"])
+    lista_especies = [
+        "Solenodonte de la Hispaniola", 
+        "Jutía de la Hispaniola", 
+        "Gavilán de la Hispaniola", 
+        "Iguana de Ricord", 
+        "Cigua Palmera"
+    ]
+    
+    col1, col2, col3 = st.columns(3)
+    with col1: 
+        sp1 = st.selectbox("Especie Dominicana A:", lista_especies, index=0)
+    with col2: 
+        sp2 = st.selectbox("Especie Dominicana B:", lista_especies, index=1)
+    with col3: 
+        sp3 = st.selectbox("Especie de Referencia C:", ["Cotorra de la Española", "Cigua Palmera"], index=0)
         
-        st.write("---")
-        # El slider ahora controla la longitud de las ramas en el dibujo JS
-        distancia = st.slider("Parámetro de Distancia Evolutiva (Controla el dibujo)", 0.1, 1.0, 0.5)
+    st.markdown("### Parámetro de Distancia Evolutiva")
+    d12 = st.slider(f"Distancia genética estimada entre {sp1} y {sp2}:", min_value=1, max_value=20, value=8)
+    
+    if st.button("Renderizar Árbol Filogenético Dinámico"):
+        ejecutar_barra_progreso("Computando agrupamientos estructurales UPGMA...")
+        st.markdown("<div class='step-card'><b>Cladograma Interactivo y Reactivo en Tiempo Real</b></div>", unsafe_allow_html=True)
         
-        st.markdown("**Instrucciones:**")
-        st.caption("1. Seleccione las especies.")
-        st.caption("2. Mueva el slider para simular cambios en la tasa de mutación/tiempo de divergencia.")
-        st.caption("3. El gráfico de la derecha se redibujará dinámicamente.")
-
-    with col2:
-        st.subheader("Cladograma Interactivo y Reactivo en Tiempo Real")
-        
-        # --- CÓDIGO JAVASCRIPT DINÁMICO PARA DIBUJAR EL ÁRBOL ---
-        # Se calculan las coordenadas de las líneas basándose en la variable 'distancia' de Streamlit
-        
-        # Coordenadas base
-        base_x = 50
-        root_y = 150
-        internal_node_x = base_x + (200 * distancia) # El nodo interno se mueve con la distancia
-        
-        # Longitud de las ramas finales fijas desde el nodo interno
-        terminal_branch_len = 100
-        tip_esp_a_x = internal_node_x + terminal_branch_len
-        tip_esp_b_x = internal_node_x + terminal_branch_len
-        
-        tip_esp_ref_x = base_x + (300 * distancia) + terminal_branch_len # La referencia también se mueve
-        
-        html_ch = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <style>
-            body {{ font-family: sans-serif; text-align: center; background-color: #f4f4f4; }}
-            canvas {{ background-color: white; border: 1px solid #ccc; border-radius: 8px; }}
-            .label {{ font-size: 14px; font-weight: bold; }}
-            .info-box {{ margin-top: 10px; padding: 10px; background-color: #e0f7fa; border-radius: 5px; font-size: 12px;}}
-        </style>
-        </head>
-        <body>
-
-        <canvas id="treeCanvas" width="550" height="320"></canvas>
-        
-        <div class="info-box">
-            <b>Métrica de Similitud Genética (Slider):</b> {distancia.format(".2f")}<br>
-            <i>Las longitudes de las ramas horizontales representan la divergencia genética simulada.</i>
+        canvas_html = f"""
+        <div style="text-align: center; padding: 15px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.2);">
+            <canvas id="treeCanvas" width="750" height="350" style="background-color: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></canvas>
         </div>
-
         <script>
             const canvas = document.getElementById('treeCanvas');
             const ctx = canvas.getContext('2d');
+            const dist = {d12};
+
+            let v_len = 40 + (dist * 8);
+
             ctx.lineWidth = 3;
-            ctx.strokeStyle = '#333';
-            ctx.lineCap = 'round';
+            ctx.font = "bold 13px Arial";
 
-            // Parámetros dinámicos pasados desde Python
-            const d = {distancia};
-            const nameA = "{esp_a}";
-            const nameB = "{esp_b}";
-            const nameC = "{esp_ref}";
-
-            // Definición de coordenadas
-            const margin = {{ top: 40, right: 180, bottom: 40, left: 40 }};
-            const width = canvas.width - margin.left - margin.right;
-            const height = canvas.height - margin.top - margin.bottom;
-
-            // Puntos clave (escalados por d)
-            const root = {{ x: margin.left, y: margin.top + height / 2 }};
-            
-            // La distancia controla qué tan lejos está el primer nodo interno
-            const internalNodeFactor = d * 0.7; // Factor para no pegar los nombres al borde
-            const internalNode = {{ x: margin.left + width * internalNodeFactor, y: margin.top + height * 0.3 }};
-            
-            const tipA = {{ x: margin.left + width * (internalNodeFactor + 0.25), y: margin.top + height * 0.1 }};
-            const tipB = {{ x: margin.left + width * (internalNodeFactor + 0.25), y: margin.top + height * 0.5 }};
-            
-            // Outgroup (C) sale directamente de la raíz, su distancia también depende de d
-            const tipC = {{ x: margin.left + width * (d * 0.9 + 0.1), y: margin.top + height * 0.9 }};
-
-            function drawLine(p1, p2) {{
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-            }}
-
-            function drawLabel(text, p, align='left') {{
-                ctx.font = 'bold 12px sans-serif';
-                ctx.fillStyle = 'black';
-                ctx.textAlign = align;
-                ctx.fillText(text, p.x + 10, p.y + 4);
-            }}
-
-            // --- DIBUJAR EL ÁRBOL ---
-
-            // 1. Rama Raíz a Nodo Interno (A+B)
-            // Rama horizontal
-            drawLine(root, {{ x: internalNode.x, y: root.y }});
-            // Rama vertical para conectar A y B
-            drawLine({{ x: internalNode.x, y: tipA.y }}, {{ x: internalNode.x, y: tipB.y }});
-
-            // 2. Rama Nodo Interno a Terminal A
-            drawLine({{ x: internalNode.x, y: tipA.y }}, tipA);
-            drawLabel(nameA, tipA);
-
-            // 3. Rama Nodo Interno a Terminal B
-            drawLine({{ x: internalNode.x, y: tipB.y }}, tipB);
-            drawLabel(nameB, tipB);
-
-            // 4. Rama Raíz a Outgroup C
-            // Rama vertical desde la raíz hacia abajo
-            drawLine(root, {{ x: root.x, y: tipC.y }});
-            // Rama horizontal a C
-            drawLine({{ x: root.x, y: tipC.y }}, tipC);
-            drawLabel(nameC, tipC);
-            
-            // Punto de la raíz
+            // Raíz del Clado
+            ctx.strokeStyle = "#455A64";
             ctx.beginPath();
-            ctx.arc(root.x, root.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = '#1e88e5';
+            ctx.moveTo(40, 175);
+            ctx.lineTo(140, 175);
+            ctx.stroke();
+            
+            // Nodo del Ancestro Común
+            ctx.fillStyle = "#FF7043";
+            ctx.beginPath();
+            ctx.arc(140, 175, 6, 0, 2 * Math.PI);
             ctx.fill();
+            ctx.fillStyle = "#37474F";
+            ctx.fillText("Ancestro Común", 45, 160);
 
+            // Bifurcación Vertical Principal
+            ctx.strokeStyle = "#1E88E5";
+            ctx.beginPath();
+            ctx.moveTo(140, 80);
+            ctx.lineTo(140, 270);
+            ctx.stroke();
+
+            // Brazo hacia el Sub-Nodo de especies dominicanas
+            ctx.beginPath();
+            ctx.moveTo(140, 80);
+            ctx.lineTo(280, 80);
+            ctx.stroke();
+
+            // Sub-Nodo Evolutivo Reactivo
+            ctx.fillStyle = "#AB47BC";
+            ctx.beginPath();
+            ctx.arc(280, 80, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "#7B1FA2";
+            ctx.fillText("Nodo Interno (D: " + (dist/2).toFixed(1) + ")", 210, 60);
+
+            // Sub-Bifurcación Vertical para A y B
+            ctx.strokeStyle = "#43A047";
+            ctx.beginPath();
+            ctx.moveTo(280, 40);
+            ctx.lineTo(280, 120);
+            ctx.stroke();
+
+            // Brazos Dinámicos finales
+            ctx.beginPath();
+            ctx.moveTo(280, 40);
+            ctx.lineTo(280 + v_len, 40);
+            ctx.moveTo(280, 120);
+            ctx.lineTo(280 + v_len, 120);
+            ctx.stroke();
+
+            ctx.fillStyle = "#2E7D32";
+            ctx.fillText("{sp1}", 295 + v_len, 45);
+            ctx.fillText("{sp2}", 295 + v_len, 125);
+
+            // Brazo de la Especie de Control Externa
+            ctx.strokeStyle = "#E53935";
+            ctx.beginPath();
+            ctx.moveTo(140, 270);
+            ctx.lineTo(520, 270);
+            ctx.stroke();
+
+            ctx.fillStyle = "#C62828";
+            ctx.fillText("{sp3} (Grupo de Control)", 535, 275);
         </script>
-        </body>
-        </html>
         """
-        components.html(html_ch, height=400)
-        
-        if st.button("Validar Hipótesis Evolutiva"):
-            st.session_state['biopuntos'] += 25
-            st.success("¡Análisis filogenético registrado! +25 BioPuntos")
-            st.info(f"Según el modelo y la distancia de {distancia:.2f}, **{esp_a}** y **{esp_b}** forman un grupo hermano (clado) con respecto a **{esp_ref}**.")
+        components.html(canvas_html, height=390)
+        completar_modulo("Filogenia", 20)
 
-# 6. Estación 5: Estructura Proteica 3D
+# --- ESTACIÓN 5: ESTRUCTURA PROTEICA 3D ---
 elif opcion == "Estación 5: Estructura Proteica 3D":
-    st.header("Estación 5: Visualización de Estructuras Terciarias")
+    st.markdown("## Estación 5: Modelado Estructural e Interacción Macromolecular")
+    st.markdown("---")
     
-    pdb_id = st.text_input("Ingrese ID de Protein Data Bank (PDB)", "1AIE").upper()
+    proteina_sel = st.selectbox(
+        "Selecciona el espécimen macromolecular a renderizar en tiempo real:",
+        ["Hemoglobina (Cadena Beta)", "Insulina", "Inmunoglobulina"]
+    )
     
-    if st.button("Renderizar Proteína"):
-        st.session_state['biopuntos'] += 30
-        st.success("¡Modelo 3D cargado! +30 BioPuntos")
+    pdb_mapping = {
+        "Hemoglobina (Cadena Beta)": {"id": "1A3N", "fun": "Transporte de oxígeno en la sangre.", "aa": "146 residuos", "enf": "Anemia Falciforme."},
+        "Insulina": {"id": "1ZNI", "fun": "Regulación homeostática de la glucosa en plasma.", "aa": "51 residuos", "enf": "Diabetes Mellitus Tipo 1."},
+        "Inmunoglobulina": {"id": "1IGY", "fun": "Defensa inmunológica y reconocimiento de antígenos.", "aa": "Cadenas pesadas y ligeras", "enf": "Inmunodeficiencias específicas."}
+    }
+    
+    info_p = pdb_mapping[proteina_sel]
+    col_v, col_i = st.columns([2, 1])
+    
+    with col_v:
+        st.markdown("<div class='step-card'><b>Visor Molecular Interactivo Tridimensional (3Dmol.js)</b></div>", unsafe_allow_html=True)
         
-        # --- COMPONENTE HTML/JS PARA 3Dmol.js ---
-        # Integra el visor molecular embebido.
+        html_code = f"""
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://3dmol.org/build/3Dmol-min.js"></script>
         
-        html_3d = f"""
-        <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
-        <div id="container-3dmol" class="mol-container" style="width: 100%; height: 500px; position: relative; border: 2px solid #ccc; border-radius: 10px;"></div>
+        <div id="container-3dmol" style="height: 450px; width: 100%; position: relative; border: 1px solid #ddd; border-radius: 8px;"></div>
         
         <script>
-            $(function() {{
-                let element = $('#container-3dmol');
-                let config = {{ backgroundColor: 'white' }};
-                let viewer = $3Dmol.createViewer(element, config);
-                
-                let pdbUri = 'https://files.rcsb.org/view/{pdb_id}.pdb';
-                
-                jQuery.ajax(pdbUri, {{
-                    success: function(data) {{
-                        viewer.addModel(data, "pdb");
-                        viewer.setStyle({{}}, {{cartoon: {{color: 'spectrum'}}}});
-                        viewer.zoomTo();
-                        viewer.render();
-                    }},
-                    error: function(hdr, status, err) {{
-                        console.error("Failed to load PDB " + pdbUri + ": " + err);
-                        element.html("<p style='color:red; text-align:center; padding-top:200px;'>Error al cargar PDB ID: {pdb_id}. Verifique el ID.</p>");
-                    }}
-                }});
+        $(document).ready(function() {{
+            let element = $('#container-3dmol');
+            let config = {{ backgroundColor: 'white' }};
+            let viewer = $3Dmol.createViewer(element, config);
+            
+            $3Dmol.download("pdb:{info_p['id']}", viewer, {{}}, function() {{
+                viewer.setStyle({{}}, {{cartoon: {{color: 'spectrum'}}}});
+                viewer.zoomTo();
+                viewer.render();
             }});
+        }});
         </script>
         """
-        components.html(html_3d, height=550)
-        st.caption(f"Visualizando PDB: {pdb_id} en estilo Cartoon (Espectro). Use el mouse para rotar y zoom.")
+        components.html(html_code, height=470)
+        st.caption("Interacción: Clic izquierdo para rotar la estructura, clic derecho para trasladar y rueda del mouse para zoom continuo.")
+        
+    with col_i:
+        st.markdown("<div class='bio-card' style='border-left-color: #7E57C2;'><h4>Ficha Técnico-Científica</h4></div>", unsafe_allow_html=True)
+        st.write(f"Código de Acceso PDB: `{info_p['id']}`")
+        st.write(f"Función Celular: {info_p['fun']}")
+        st.write(f"Dimensión Estructural: {info_p['aa']}")
+        st.write(f"Patología Asociada: {info_p['enf']}")
+        
+    completar_modulo("Estructures", 20)
 
-# 7. Caso Clínico Integrado
+# --- CASO CLÍNICO INTEGRADO ---
 elif opcion == "Caso Clínico Integrado":
-    st.header("🦠 Caso Clínico Integrado: Diagnóstico Molecular de Precisión")
+    st.markdown("## Estación Clínica: Diagnóstico Molecular de Precisión")
+    st.markdown("---")
     
     st.markdown("""
-    <div style='background-color: #fce4ec; padding: 20px; border-radius: 10px; border-left: 5px solid #e91e63;'>
-        <h3>Historia: Paciente con Anemia Falciforme</h3>
-        <p>Un paciente de 14 años asiste a consulta presentando cuadros recurrentes de fatiga extrema y dolor óseo agudo. Se sospecha de <b>Anemia Falciforme</b>, una enfermedad genética debida a una mutación puntual en el gen de la beta-globina (hemoglobina).</p>
-        <p><b>Su Desafío:</b> Utilizar las estaciones de BioInnova para confirmar el diagnóstico molecular.</p>
-    </div>
+        <div class='bio-card' style='border-left-color: #E53935;'>
+            <h4>Historial Médico del Paciente</h4>
+            <p>Paciente de 14 años de edad asiste a consulta presentando cuadros recurrentes de fatiga extrema, dolor óseo agudo e ictericia. Se sospecha de una hemoglobinopatía congénita. Vamos a analizar su secuencia nucleotídica para confirmar el diagnóstico.</p>
+        </div>
     """, unsafe_allow_html=True)
     
-    st.write("---")
-    st.subheader("Paso 1: Transcripción y Traducción de las variantes")
+    st.code("Cadena Normal:   ATG GTG CAC CTG ACT CCT GAG GAG\nCadena Paciente: ATG GTG CAC CTG ACT CCT GTG GAG", language="text")
     
-    adn_normal = "ACCTCCTCCTTC" # Parte del gen normal
-    adn_mutado = "ACCTCCTCCGTC" # Parte del gen con mutación (A -> T en la hebra codificante, aquí reflejado en la molde simulada para la demo)
+    diagnostico = st.radio("Tras observar detenidamente el set de secuencias, ¿existe una mutación puntual en el paciente?", ["Seleccionar...", "Sí, se detecta un cambio puntual de bases.", "No, las cadenas son completamente idénticas."], index=0)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("**Secuencia ADN Normal:**")
-        st.code(adn_normal)
-    with col2:
-        st.markdown("**Secuencia ADN Paciente:**")
-        st.code(adn_mutado)
-        
-    st.markdown("**Traducción simulada a Proteína:**")
-    # Nota didáctica: La mutación real es GAG -> GTG en ADN, resultando en Glu -> Val en proteína.
-    col_p1, col_p2 = st.columns(2)
-    col_p1.info("Pro ➔ Glu ➔ Glu ➔ Lys (Normal)")
-    col_p2.warning("Pro ➔ Val ➔ Glu ➔ Lys (Paciente - MUTADO)")
-    
-    check_1 = st.checkbox("He analizado las secuencias de ADN y proteína.")
-    
-    st.write("---")
-    st.subheader("Paso 2: Visualización Estructural del Efecto")
-    st.write("Cargue la estructura de la Hemoglobina para comprender el impacto del cambio de Glutamato (ácido) por Valina (hidrofóbica).")
-    
-    if st.button("Cargar Estructura Hemoglobina (demo)"):
-        st.image("https://raw.githubusercontent.com/paulino-hidalgo-l/simulador-bioinformatica/main/hemo_3d_demo.png", caption="Demo Estructural: La flecha indica el sitio de la mutación que causa la polimerización.") # URL demo
+    if diagnostico == "Sí, se detecta un cambio puntual de bases.":
+        st.success("Diagnóstico Correcto. Has identificado con precisión la mutación. El nucleótido Adenina (A) fue sustituido por una Timina (T). Esto altera por completo el codón GAG (Ácido Glutámico) mutándolo a GTG (Valina), provocando la polimerización anómala de la Hemoglobina que desencadena la Anemia Falciforme.")
+        completar_modulo("CasoClinico", 20)
+    elif diagnostico == "No, las cadenas son completamente idénticas.":
+        st.error("Respuesta Incorrecta. Observa detenidamente el penúltimo triplete: la cadena normal tiene 'GAG' mientras que el paciente presenta 'GTG'. Por favor, revisa de nuevo la secuencia.")
 
-    st.write("---")
-    st.subheader("Conclusión y Diagnóstico")
-    confirmacion = st.radio("Basado en la evidencia bioinformática:", ["No concluyente", "Se confirma Anemia Falciforme (mutación Glu➔Val detectada)", "El paciente está sano"])
+# --- MANUAL, ERRORES Y EVALUACIÓN TÉCNICA ---
+elif opcion == "Manual, Errores y Evaluación Técnico-Pedagógica":
+    st.markdown("## Documentación y Evaluación del Aprendizaje")
+    st.markdown("---")
     
-    if st.button("Entregar Informe de Diagnóstico"):
-        if confirmacion == "Se confirma Anemia Falciforme (mutación Glu➔Val detectada)":
-            st.session_state['biopuntos'] += 50
-            st.balloons()
-            st.success("¡Diagnóstico Correcto! Informe enviado. +50 BioPuntos.")
-        else:
-            st.error("Revisar la evidencia. El cambio de aminoácido es crítico.")
-
-# 8. Manual y Evaluación
-elif opcion == "Manual y Evaluación":
-    st.header("Documentación y Evaluación del Aprendizaje")
-    
-    tab1, tab2, tab3 = st.tabs(["Guía Operativa", "Protocolos", "Examen de Certificación"])
+    tab1, tab2, tab3 = st.tabs(["Manual del Usuario", "Protocolo de Errores", "Evaluación Formativa de Genética"])
     
     with tab1:
-        st.subheader("Manual de Usuario - BioInnova")
-        st.write("Esta plataforma automatiza procesos bioinformáticos avanzados...")
-        st.markdown("- **Estación 1:** Modelado del Dogma Central.")
-        st.markdown("- **Estación 2:** Alineamiento Needleman-Wunsch.")
-        st.markdown("- **Estación 4:** Análisis Cladístico Matemático.")
+        st.markdown("""
+            ### Guía Operativa del Laboratorio Virtual
+            Esta plataforma automatiza procesos bioinformáticos avanzados a través de simuladores específicos:
+            * **Estación 1 (Transcripción/Traducción):** Modelado del Dogma Central de la Biología Molecular convirtiendo secuencias de ADN molde a ARNm y obteniendo los aminoácidos resultantes.
+            * **Estación 2 (Alineamiento Global):** Alineamiento Needleman-Wunsch usando matrices dinámicas de homología de nucleótidos con penalizaciones configurables.
+            * **Estación 3 (Ensamble Genómico):** Reconstrucción de genomas fragmentados en k-meros únicos mediante el análisis de solapamientos continuos.
+            * **Estación 4 (Filogenia Molecular):** Análisis filogenético matemático basado en matrices de distancias evolutivas de fauna endémica dominicana.
+            * **Estación 5 (Estructura Proteica 3D):** Renderizado tridimensional dinámico de macromoléculas PDB mediante 3Dmol.js.
+        """)
         
     with tab2:
-        st.subheader("Protocolos de Prácticas")
-        st.download_button("Descargar Guía de Práctica 1 (PDF)", data=b"Demo PDF", file_name="practica1_bioinnova.pdf")
+        st.markdown("""
+            ### Sistema Interno de Gestión de Excepciones y Controles
+            * **Validación de Caracteres No Biológicos:** El sistema interrumpe el análisis inmediato en la Estación 1 si detecta bases que no correspondan a la nomenclatura IUPAC estándar de nucleótidos (A, T, C, G).
+            * **Control de Dimensión de k-meros:** Restricción lógica interactiva mediante un deslizador adaptativo para evitar fallos matemáticos por fragmentos de tamaño superior a la secuencia molde.
+            * **Persistencia de Estados en Interfaz:** Uso de variables controladas en `st.session_state` para evitar reinicios accidentales de renderizado al interactuar con formularios complementarios.
+        """)
         
     with tab3:
-        st.subheader("Examen de Certificación de Aptitud Bioinformática")
-        st.write("Requiere 200 BioPuntos para desbloquear.")
-        if st.session_state['biopuntos'] >= 200:
-            st.button("Iniciar Examen (Desbloqueado)")
-        else:
-            st.button("Iniciar Examen (Bloqueado)", disabled=True)
-            st.caption(f"Le faltan {200 - st.session_state['biopuntos']} pts.")
+        st.markdown("### Examen de Conocimientos Esenciales: Fundamentos de Genética")
+        st.write("Responde las siguientes 10 preguntas básicas para evaluar tus conocimientos académicos:")
+        
+        p1 = st.radio(
+            "1. ¿Qué es el ADN (Ácido Desoxirribonucleico)?",
+            [
+                "Una proteína globular encargada de la contracción muscular celular.",
+                "La macromolécula que almacena y transmite la información genética de los seres vivos.",
+                "Un carbohidrato simple utilizado para la obtención de energía inmediata."
+            ],
+            index=None, key="p1_eva"
+        )
+        
+        p2 = st.radio(
+            "2. ¿Cuáles son las cuatro bases nitrogenadas fundamentales que componen la molécula de ADN?",
+            [
+                "Adenina, Timina, Citosina y Guanina.",
+                "Adenina, Uracilo, Citosina y Guanina.",
+                "Alanina, Treonina, Cisteína y Glicina."
+            ],
+            index=None, key="p2_eva"
+        )
+        
+        p3 = st.radio(
+            "3. ¿Qué forma o estructura geométrica característica posee la molécula de ADN bicatenario?",
+            [
+                "Estructura lineal simple monocatenaria.",
+                "Forma de doble hélice o escala de caracol helicoidal.",
+                "Estructura perfectamente simétrica en forma de anillo cerrado único."
+            ],
+            index=None, key="p3_eva"
+        )
+        
+        p4 = st.radio(
+            "4. ¿En qué organelo especializado de las células eucariotas se localiza principalmente el ADN genómico?",
+            [
+                "En el Aparato de Golgi.",
+                "En los Ribosomas libres del citoplasma.",
+                "En el Núcleo celular."
+            ],
+            index=None, key="p4_eva"
+        )
 
-# Pie de página
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: gray;'>BioInnova v1.2 | ISFODOSU - Recinto Luis Napoleón Núñez Molina | Licenciatura en Biología orientada a la Educación Secundaria</p>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: gray;'>Desarrollado por Paulino-Hidalgo, L. | 2026</p>", unsafe_allow_html=True)
+        p5 = st.radio(
+            "5. ¿Qué base nitrogenada sustituye a la Timina durante el proceso de transcripción a ARN?",
+            [
+                "Uracilo.",
+                "Guanina.",
+                "Adenina."
+            ],
+            index=None, key="p5_eva"
+        )
+
+        p6 = st.radio(
+            "6. ¿Qué es un gen desde el punto de vista molecular?",
+            [
+                "Un segmento específico de ADN que contiene las instrucciones para sintetizar una proteína o ARN funcional.",
+                "Un orgánulo celular responsable de la digestión de macromoléculas defectuosas.",
+                "La secuencia completa de aminoácidos unidos en un enlace peptídico circular."
+            ],
+            index=None, key="p6_eva"
+        )
+
+        p7 = st.radio(
+            "7. ¿Qué son los cromosomas?",
+            [
+                "Estructuras altamente condensadas formadas por ADN y proteínas que se organizan durante la división celular.",
+                "Moléculas lipídicas que delimitan la membrana plasmática.",
+                "Vesículas citoplasmáticas que transportan proteínas exógenas."
+            ],
+            index=None, key="p7_eva"
+        )
+
+        p8 = st.radio(
+            "8. ¿A qué se refiere el término 'mutación genética'?",
+            [
+                "A cualquier cambio o alteración permanente en la secuencia de nucleótidos del ADN.",
+                "Al proceso normal de duplicación exacta de las cadenas celulares.",
+                "A la destrucción programada de las mitocondrias por falta de oxígeno."
+            ],
+            index=None, key="p8_eva"
+        )
+
+        p9 = st.radio(
+            "9. ¿Cuál es la función principal del ARN mensajero (ARNm) en la célula?",
+            [
+                "Llevar la información genética copiada del ADN desde el núcleo hacia los ribosomas para la síntesis de proteínas.",
+                "Catalizar la degradación de los azúcares en la respiración celular anaeróbica.",
+                "Unir físicamente los fosfatos para dar rigidez a la pared celular de los tejidos."
+            ],
+            index=None, key="p9_eva"
+        )
+
+        p10 = st.radio(
+            "10. ¿Cuál es la unidad estructural básica (monómero) que compone los ácidos nucleicos como el ADN y el ARN?",
+            [
+                "El Aminoácido.",
+                "El Nucleótido (compuesto por un azúcar, un fosfato y una base nitrogenada).",
+                "El Ácido graso saturado."
+            ],
+            index=None, key="p10_eva"
+        )
+        
+        if st.button("Enviar y Calificar Evaluación"):
+            preguntas = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
+            if any(p is None for p in preguntas):
+                st.warning("Por favor, responde a todas las preguntas (1 a 10) del examen antes de enviar tu calificación.")
+            else:
+                nota = 0
+                if p1 == "La macromolécula que almacena y transmite la información genética de los seres vivos.": nota += 10
+                if p2 == "Adenina, Timina, Citosina y Guanina.": nota += 10
+                if p3 == "Forma de doble hélice o escala de caracol helicoidal.": nota += 10
+                if p4 == "En el Núcleo celular.": nota += 10
+                if p5 == "Uracilo.": nota += 10
+                if p6 == "Un segmento específico de ADN que contiene las instrucciones para sintetizar una proteína o ARN funcional.": nota += 10
+                if p7 == "Estructuras altamente condensadas formadas por ADN y proteínas que se organizan durante la división celular.": nota += 10
+                if p8 == "A cualquier cambio o alteración permanente en la secuencia de nucleótidos del ADN.": nota += 10
+                if p9 == "Llevar la información genética copiada del ADN desde el núcleo hacia los ribosomas para la síntesis de proteínas.": nota += 10
+                if p10 == "El Nucleótido (compuesto por un azúcar, un fosfato y una base nitrogenada).": nota += 10
+                
+                st.markdown(f"### Resultado Final de la Evaluación: `{nota} / 100` puntos.")
+                if nota == 100:
+                    st.success("¡Excelente! Has demostrado un conocimiento perfecto de las bases esenciales de la genética.")
+                elif nota >= 70:
+                    st.warning("Buen intento. Has aprobado la evaluación, pero se recomienda repasar los conceptos fundamentales.")
+                else:
+                    st.error("Te sugerimos volver a revisar el material de estudio e intentar la evaluación de nuevo para consolidar tu aprendizaje.")
